@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V6.3</title>
+  <title>JETLAG COMMANDER // V7.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
   <style>
@@ -108,7 +108,7 @@
     <div class="border-b border-slate-800 pb-6 flex justify-between items-start">
       <div>
         <h1 class="text-3xl font-bold text-emerald-500 tracking-tighter uppercase">Jetlag_Commander <span
-            class="text-slate-600 text-sm ml-2">V6.3</span></h1>
+            class="text-slate-600 text-sm ml-2">V7.1</span></h1>
         <p class="text-xs text-slate-500 mt-2">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -149,22 +149,24 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <label>
-            <input type="radio" name="strategy" value="aggressive" class="radio-hidden" onchange="toggleCustom()">
+            <input type="radio" name="strategy" value="scientific" class="radio-hidden" checked
+              onchange="toggleCustom()">
             <div class="strategy-card">
               <div>
-                <div class="text-red-400 font-bold text-sm mb-1" data-i18n="strat_agg_title">⚡️ 暴力折中 (Single Day)</div>
-                <div class="text-xs text-slate-400" data-i18n="strat_agg_desc">单次强力复位。取“生理惯性”与“目标时间”的几何中心点。不给身体留退路。
+                <div class="text-purple-400 font-bold text-sm mb-1" data-i18n="strat_sci_title">⚡️ 智能科学 (Smart Science)
                 </div>
+                <div class="text-xs text-slate-400" data-i18n="strat_sci_desc">
+                  基于PRC曲线的非线性压缩。前两天高强度压缩40%-75%相位，利用睡眠压力在第3天强制闭环。</div>
               </div>
             </div>
           </label>
 
           <label>
-            <input type="radio" name="strategy" value="smart_even" class="radio-hidden" checked
-              onchange="toggleCustom()">
+            <input type="radio" name="strategy" value="smart_even" class="radio-hidden" onchange="toggleCustom()">
             <div class="strategy-card">
               <div>
-                <div class="text-blue-400 font-bold text-sm mb-1" data-i18n="strat_even_title">⚖️ 智能均分 (Linear)</div>
+                <div class="text-blue-400 font-bold text-sm mb-1" data-i18n="strat_even_title">⚖️ 线性均分 (Linear Even)
+                </div>
                 <div class="text-xs text-slate-400" data-i18n="strat_even_desc">传统稳健方案。将总时差平均分配。每天移动固定步长 (如 2h/天)。</div>
               </div>
             </div>
@@ -174,7 +176,7 @@
             <input type="radio" name="strategy" value="smart_fold" class="radio-hidden" onchange="toggleCustom()">
             <div class="strategy-card">
               <div>
-                <div class="text-emerald-400 font-bold text-sm mb-1" data-i18n="strat_fold_title">🧬 智能折中 (Max 4 Days)
+                <div class="text-emerald-400 font-bold text-sm mb-1" data-i18n="strat_fold_title">🧬 快速折中 (Rapid Fold)
                 </div>
                 <div class="text-xs text-slate-400" data-i18n="strat_fold_desc">高效收敛。每天消除 50% 时差。强制在第4天内完成，若未达标则触发强制吸附。
                 </div>
@@ -188,7 +190,7 @@
               <div>
                 <div class="text-slate-300 font-bold text-sm mb-1" data-i18n="strat_custom_title">🛠 自定义周期 (Custom)
                 </div>
-                <div class="text-xs text-slate-400" data-i18n="strat_custom_desc">手动指定天数。</div>
+                <div class="text-xs text-slate-400" data-i18n="strat_custom_desc">手动指定天数 (应用科学压缩算法)。</div>
               </div>
               <div id="customInput" class="hidden mt-3 pt-3 border-t border-slate-700">
                 <input type="number" id="customDays" value="4"
@@ -227,17 +229,17 @@
         step2: "Step 2: 上一次唤醒 (End)",
         step3: "Step 3: 目标时区 (Target)",
         step4: "Step 4: 选择算法模型 (Algorithm)",
-        strat_agg_title: "⚡️ 暴力折中 (Single Day)",
-        strat_agg_desc: "单次强力复位。取“生理惯性”与“目标时间”的几何中心点。不给身体留退路。",
-        strat_even_title: "⚖️ 智能均分 (Linear)",
+        strat_sci_title: "⚡️ 智能科学 (Smart Science)",
+        strat_sci_desc: "基于PRC曲线的非线性压缩。前两天高强度压缩40%-75%相位，利用睡眠压力在第3天强制闭环。",
+        strat_even_title: "⚖️ 线性均分 (Linear Even)",
         strat_even_desc: "传统稳健方案。将总时差平均分配。每天移动固定步长 (如 2h/天)。",
-        strat_fold_title: "🧬 智能折中 (Max 4 Days)",
+        strat_fold_title: "🧬 快速折中 (Rapid Fold)",
         strat_fold_desc: "高效收敛。每天消除 50% 时差。强制在第4天内完成，若未达标则触发强制吸附。",
         strat_custom_title: "🛠 自定义周期 (Custom)",
-        strat_custom_desc: "手动指定天数。",
+        strat_custom_desc: "手动指定天数 (应用科学压缩算法)。",
         btn_execute: "生成强制指令 (EXECUTE)",
-        hard_reset: "HARD RESET",
-        desc_agg: "强制折中：取生理惯性与目标时间的几何中心点。",
+        desc_sci: "相位压缩：高强度非线性步进",
+        desc_sci_final: "✅ 强制闭环：光照锚定完成",
         day_prefix: "DAY",
         desc_even: "线性均分：每日调整",
         desc_fold_success: "✅ 区间达标 (20:00-23:00)。提前完成。",
@@ -251,17 +253,17 @@
         step2: "Step 2: Last Wake (End)",
         step3: "Step 3: Target Zone (Target)",
         step4: "Step 4: Select Algorithm (Algorithm)",
-        strat_agg_title: "⚡️ Aggressive Fold (Single Day)",
-        strat_agg_desc: "Single-day hard reset. Targets geometric midpoint of 'sleep inertia' and 'target time'. No retreat.",
-        strat_even_title: "⚖️ Smart Linear",
+        strat_sci_title: "⚡️ Smart Science",
+        strat_sci_desc: "Based on Phase Response Curves. Non-linear compression shifts 40%-75% of offset in 2 days, locking strictly on Day 3.",
+        strat_even_title: "⚖️ Linear Even",
         strat_even_desc: "Conservative approach. Distributes total offset evenly. Fixed daily shift (e.g., 2h/day).",
-        strat_fold_title: "🧬 Smart Fold (Max 4 Days)",
+        strat_fold_title: "🧬 Rapid Fold",
         strat_fold_desc: "Efficient convergence. Eliminates 50% offset daily. Force complete by Day 4, snaps to schedule if target not met.",
         strat_custom_title: "🛠 Custom Cycle (Custom)",
-        strat_custom_desc: "Manually specify duration.",
+        strat_custom_desc: "Manually specify duration (Scientific Architecture).",
         btn_execute: "GENERATE COMMAND (EXECUTE)",
-        hard_reset: "HARD RESET",
-        desc_agg: "Forced Fold: Geometric midpoint of inertia and target.",
+        desc_sci: "Phase Compression: High-intensity shift",
+        desc_sci_final: "✅ Locked: Circadian Anchor Set",
         day_prefix: "DAY",
         desc_even: "Linear Even: Daily shift",
         desc_fold_success: "✅ Target Met (20:00-23:00). Completed early.",
@@ -365,27 +367,35 @@
 
       let plan = [];
 
-      if (strategy === 'aggressive') {
-        const naturalBedtime = wakeInTarget.plus({ hours: 16 });
-        let targetBedtime = naturalBedtime.set({ hour: 23, minute: 0 });
-
-        if (targetBedtime.diff(naturalBedtime, 'hours').hours > 12) targetBedtime = targetBedtime.minus({ days: 1 });
-        else if (targetBedtime.diff(naturalBedtime, 'hours').hours < -12) targetBedtime = targetBedtime.plus({ days: 1 });
-
-        const diffMillis = targetBedtime.diff(naturalBedtime).toMillis();
-        const midpointBedtime = naturalBedtime.plus({ milliseconds: diffMillis * 0.5 });
-
-        plan.push({
-          day: t.hard_reset,
-          sleepTime: midpointBedtime,
-          wakeTime: midpointBedtime.plus({ hours: 8 }),
-          desc: t.desc_agg
-        });
-      }
-
-      else if (strategy === 'smart_even' || strategy === 'custom') {
+      if (strategy === 'scientific' || strategy === 'custom') {
         let days = 3;
         if (strategy === 'custom') days = parseInt(document.getElementById('customDays').value);
+
+        for (let i = 1; i <= days; i++) {
+          // Scientific Logic: Non-linear compression
+          // We generate a curve (ratio) that starts fast and ends at 1.0
+          // Formula: (i / days) ^ 0.7 gives a curve similar to [0.4, 0.75, 1.0] for 3 days
+          let ratio = Math.pow(i / days, 0.7);
+
+          let shiftAmount = diff * ratio;
+          let dayWake = wakeInTarget.plus({ hours: (24 * i) + shiftAmount });
+          let daySleep = dayWake.minus({ hours: 8 });
+
+          let desc = i === days
+            ? t.desc_sci_final
+            : `${t.desc_sci} ${Math.abs(diff * (ratio - Math.pow((i - 1) / days, 0.7))).toFixed(1)}h`;
+
+          plan.push({
+            day: `${t.day_prefix} ${i}/${days}`,
+            sleepTime: daySleep,
+            wakeTime: dayWake,
+            desc: desc
+          });
+        }
+      }
+
+      else if (strategy === 'smart_even') {
+        let days = 3;
         const step = diff / days;
 
         for (let i = 1; i <= days; i++) {
