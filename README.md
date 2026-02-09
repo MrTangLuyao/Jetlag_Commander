@@ -1,14 +1,12 @@
 # Jetlag Commander
 
-### 🕹️ Circadian Rhythm Override Protocol
-
 > A minimalist, hardcore web tool to manage jet lag, helping adjust sleep schedules for late nights and long-haul flights.
 
 [中文说明 (Chinese Documentation)](#cn)
 
 ---
 
-## 🔬 Introduction
+## ✈️ Introduction
 
 Jetlag Commander is a web-based tool designed to mathematically realign your internal biological clock. Unlike gentle sleep aids, this tool calculates phase response curves to generate strict "Sleep" and "Wake" commands.
 
