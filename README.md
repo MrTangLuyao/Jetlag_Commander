@@ -5,7 +5,7 @@
 [中文说明 (Chinese Documentation)](#cn)
 
 ---
-
+Live Demo / 在线体验: [https://jetlag.louie1.com/](https://jetlag.louie1.com/)
 ## ✈️ Introduction
 
 Jetlag Commander is a web-based tool designed to mathematically realign your internal biological clock. Unlike gentle sleep aids, this tool calculates phase response curves to generate strict "Sleep" and "Wake" commands.
