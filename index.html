@@ -1,448 +1,1115 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JETLAG COMMANDER // V7.2</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body { 
-            font-family: 'JetBrains Mono', monospace; 
-            background-color: #020617; 
-            color: #e2e8f0; 
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JETLAG COMMANDER // V10.2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
-        .radio-hidden { position: absolute; opacity: 0; width: 0; height: 0; }
-        
-        .strategy-card {
-            cursor: pointer;
-            background-color: #0f172a; 
-            border: 1px solid #334155; 
-            padding: 1.5rem;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: all 0.2s ease-in-out;
-            position: relative;
-        }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #020617;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
 
-        .strategy-card:hover {
-            background-color: #1e293b;
-            border-color: #475569;
-        }
+    /* -----------------------
+           Wizard Transition
+           ----------------------- */
+    .view-section {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
 
-        .radio-hidden:checked + .strategy-card {
-            background-color: #064e3b; 
-            border-color: #10b981; 
-            box-shadow: 0 0 0 1px #10b981 inset;
-        }
+    .view-section.active {
+      display: block;
+      opacity: 1;
+    }
 
-        .radio-hidden:checked + .strategy-card::after {
-            content: 'SELECTED';
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #10b981;
-            color: #000;
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 2px 6px;
-        }
+    /* -----------------------
+           Cyberpunk AM/PM Toggle
+           ----------------------- */
+    .ampm-toggle {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #64748b;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0 12px;
+      transition: all 0.2s;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .hard-card {
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 0; 
-        }
+    .ampm-toggle.am-active {
+      background: #fbbf24;
+      color: #000;
+      border-color: #fbbf24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
 
-        .sleep-border { border-left: 4px solid #3b82f6; } 
-        .wake-border { border-left: 4px solid #f97316; } 
+    .ampm-toggle.pm-active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+    }
 
-        .input-group { 
-            display: flex; 
-            border: 1px solid #334155; 
-            background: #020617;
-        }
-        .input-group input { 
-            flex: 1; background: transparent; color: #f8fafc; border: none; padding: 14px; 
-            font-family: inherit; font-size: 0.9rem;
-        }
-        .input-group select { 
-            width: 140px; background: #1e293b; color: #94a3b8; border: none; 
-            border-left: 1px solid #334155; padding-left: 10px; font-size: 0.75rem;
-        }
-    </style>
+    /* -----------------------
+           Cards & Buttons
+           ----------------------- */
+    .radio-hidden {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .strategy-card {
+      cursor: pointer;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1.5rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+      min-height: 160px;
+    }
+
+    .strategy-card:hover {
+      background-color: #1e293b;
+      border-color: #475569;
+    }
+
+    .radio-hidden:checked+.strategy-card {
+      background-color: #064e3b;
+      border-color: #10b981;
+      box-shadow: 0 0 0 1px #10b981 inset;
+    }
+
+    .radio-hidden:checked+.strategy-card::after {
+      content: 'SELECTED';
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #10b981;
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 2px 6px;
+    }
+
+    .dir-label {
+      flex: 1;
+      display: flex;
+    }
+
+    .dir-btn {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dir-radio:checked+.dir-btn {
+      background-color: #1e3a8a;
+      border-color: #60a5fa;
+      color: white;
+    }
+
+    .dir-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .hard-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0;
+    }
+
+    .sleep-border {
+      border-left: 4px solid #3b82f6;
+    }
+
+    .wake-border {
+      border-left: 4px solid #f97316;
+    }
+
+    /* Inputs */
+    .split-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .custom-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      text-align: center;
+      border-radius: 0;
+      outline: none;
+    }
+
+    .custom-input:focus {
+      border-color: #10b981;
+    }
+
+    input[type="date"] {
+      flex: 2;
+      text-transform: uppercase;
+    }
+
+    .time-num {
+      width: 60px;
+    }
+
+    .zone-select {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .colon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #475569;
+    }
+
+    .days-input {
+      background: #000;
+      border: 1px solid #475569;
+      color: white;
+      width: 60px;
+      text-align: center;
+      padding: 4px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .display-select {
+      background-color: #0f172a;
+      color: #10b981;
+      border: 1px solid #334155;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Action Button */
+    .action-btn {
+      width: 100%;
+      background-color: #059669;
+      color: white;
+      font-weight: bold;
+      padding: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      margin-top: 1rem;
+    }
+
+    .action-btn:hover {
+      background-color: #10b981;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Info Trigger */
+    .info-trigger {
+      font-size: 0.7rem;
+      color: #475569;
+      text-decoration: none;
+      margin-left: 8px;
+      cursor: pointer;
+      border: 1px solid #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .info-trigger:hover {
+      color: #10b981;
+      border-color: #10b981;
+    }
+
+    /* Knowledge Base Styling */
+    .kb-header {
+      color: #10b981;
+      font-weight: bold;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.5rem;
+    }
+
+    .kb-title {
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .kb-text {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .kb-highlight {
+      color: #e2e8f0;
+      font-weight: bold;
+    }
+
+    .kb-sub {
+      color: #64748b;
+      font-size: 0.75rem;
+      margin-top: -1rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+  </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
 
-    <div class="w-full max-w-5xl space-y-8">
-        
-        <div class="border-b border-slate-800 pb-6 flex justify-between items-start">
-            <div>
-                <h1 class="text-3xl font-bold text-emerald-500 tracking-tighter uppercase">Jetlag_Commander <span class="text-slate-600 text-sm ml-2">V7.2</span></h1>
-                <p class="text-xs text-slate-500 mt-2">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
-            </div>
-            <button id="langBtn" onclick="toggleLanguage()" class="text-xs border border-slate-700 rounded px-3 py-1 text-slate-500 hover:text-emerald-500 hover:border-emerald-500 transition-colors font-bold tracking-wider">
-                EN / 中
-            </button>
-        </div>
+<body class="min-h-screen flex flex-col items-center justify-start pt-4 pb-12 px-4 md:pt-12">
 
-        <div class="space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase" data-i18n="step1">Step 1: 上一次入睡 (Start)</label>
-                    <div class="input-group">
-                        <input type="datetime-local" id="sleepTime">
-                        <select id="sleepZone"></select>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase" data-i18n="step2">Step 2: 上一次唤醒 (End)</label>
-                    <div class="input-group">
-                        <input type="datetime-local" id="wakeTime">
-                        <select id="wakeZone"></select>
-                    </div>
-                </div>
-            </div>
+  <div class="w-full max-w-4xl relative">
 
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-emerald-600 uppercase" data-i18n="step3">Step 3: 目标时区 (Target)</label>
-                <select id="targetZone" class="w-full bg-slate-900 border border-emerald-900 text-emerald-500 p-4 text-sm focus:outline-none focus:border-emerald-500"></select>
-            </div>
-
-            <div class="space-y-2 pt-4 border-t border-slate-800">
-                <label class="text-xs font-bold text-white uppercase mb-2 block" data-i18n="step4">Step 4: 选择算法模型 (Algorithm)</label>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    <label>
-                        <input type="radio" name="strategy" value="scientific" class="radio-hidden" checked onchange="toggleCustom()">
-                        <div class="strategy-card">
-                            <div>
-                                <div class="text-red-400 font-bold text-sm mb-1" data-i18n="strat_sci_title">⚡️ 智能科学 (Smart Science)</div>
-                                <div class="text-xs text-slate-400" data-i18n="strat_sci_desc">基于PRC曲线的非线性压缩。前两天高强度压缩40%-75%相位，利用睡眠压力在第3天强制闭环。</div>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label>
-                        <input type="radio" name="strategy" value="smart_even" class="radio-hidden" onchange="toggleCustom()">
-                        <div class="strategy-card">
-                            <div>
-                                <div class="text-blue-400 font-bold text-sm mb-1" data-i18n="strat_even_title">⚖️ 线性均分 (Linear Even)</div>
-                                <div class="text-xs text-slate-400" data-i18n="strat_even_desc">传统稳健方案。将总时差平均分配。每天移动固定步长 (如 2h/天)。</div>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label>
-                        <input type="radio" name="strategy" value="smart_fold" class="radio-hidden" onchange="toggleCustom()">
-                        <div class="strategy-card">
-                            <div>
-                                <div class="text-emerald-400 font-bold text-sm mb-1" data-i18n="strat_fold_title">🧬 快速折中 (Rapid Fold)</div>
-                                <div class="text-xs text-slate-400" data-i18n="strat_fold_desc">高效收敛。每天消除 50% 时差。强制在第4天内完成，若未达标则触发强制吸附。</div>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label>
-                        <input type="radio" name="strategy" value="custom" class="radio-hidden" onchange="toggleCustom()">
-                        <div class="strategy-card">
-                            <div>
-                                <div class="text-slate-300 font-bold text-sm mb-1" data-i18n="strat_custom_title">🛠 自定义周期 (Custom)</div>
-                                <div class="text-xs text-slate-400" data-i18n="strat_custom_desc">手动指定天数 (应用科学压缩算法)。</div>
-                            </div>
-                            <div id="customInput" class="hidden mt-3 pt-3 border-t border-slate-700">
-                                <input type="number" id="customDays" value="4" class="w-20 bg-black border border-slate-600 p-1 text-center text-xs text-white" min="2" max="10">
-                                <span class="text-xs text-slate-500 ml-2">Days</span>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <button onclick="execute()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-5 text-sm uppercase tracking-widest transition-colors shadow-[0_0_20px_rgba(16,185,129,0.2)]" data-i18n="btn_execute">
-                生成强制指令 (EXECUTE)
-            </button>
-        </div>
-
-        <div id="resultArea" class="hidden space-y-6 pt-6 border-t border-slate-800">
-            <div class="flex justify-between items-end border-b border-slate-800 pb-2">
-                <h2 class="text-emerald-500 font-bold text-sm uppercase tracking-widest">Mission Protocol</h2>
-                <span id="offsetBadge" class="text-xs bg-slate-900 text-slate-400 px-2 py-1 font-mono border border-slate-700">OFFSET: --</span>
-            </div>
-
-            <div id="timeline" class="space-y-4"></div>
-        </div>
+    <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.2 by Louie Tang</span></h1>
+        <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
+      </div>
+      <button id="langBtn" onclick="toggleLanguage()"
+        class="text-[10px] border border-slate-700 bg-slate-900 rounded px-2 py-1 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 transition-colors font-bold tracking-wider">
+        EN / 中
+      </button>
     </div>
 
-    <script>
-        const DateTime = luxon.DateTime;
+    <div id="view-welcome" class="view-section active text-center py-12 max-w-2xl mx-auto">
+      <div class="text-6xl mb-6">🎉</div>
+      <h2 class="text-3xl font-bold text-white mb-4 tracking-tight" data-i18n="welcome_title">欢迎</h2>
+      <p class="text-slate-400 mb-12 px-4 leading-relaxed text-sm md:text-base" data-i18n="welcome_desc">
+        Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。
+      </p>
+      <button onclick="goToView(1)" class="action-btn max-w-xs mx-auto" data-i18n="btn_start">
+        开始
+      </button>
+    </div>
 
-        const translations = {
-            zh: {
-                step1: "Step 1: 上一次入睡 (Start)",
-                step2: "Step 2: 上一次唤醒 (End)",
-                step3: "Step 3: 目标时区 (Target)",
-                step4: "Step 4: 选择算法模型 (Algorithm)",
-                strat_sci_title: "⚡️ 智能科学 (Smart Science)",
-                strat_sci_desc: "基于PRC曲线的非线性压缩。前两天高强度压缩40%-75%相位，利用睡眠压力在第3天强制闭环。",
-                strat_even_title: "⚖️ 线性均分 (Linear Even)",
-                strat_even_desc: "传统稳健方案。将总时差平均分配。每天移动固定步长 (如 2h/天)。",
-                strat_fold_title: "🧬 快速折中 (Rapid Fold)",
-                strat_fold_desc: "高效收敛。每天消除 50% 时差。强制在第4天内完成，若未达标则触发强制吸附。",
-                strat_custom_title: "🛠 自定义周期 (Custom)",
-                strat_custom_desc: "手动指定天数 (应用科学压缩算法)。",
-                btn_execute: "生成强制指令 (EXECUTE)",
-                desc_sci: "相位压缩：高强度非线性步进",
-                desc_sci_final: "✅ 强制闭环：光照锚定完成",
-                day_prefix: "DAY",
-                desc_even: "线性均分：每日调整",
-                desc_fold_success: "✅ 区间达标 (20:00-23:00)。提前完成。",
-                desc_fold_adjust: "🔄 折中收敛：相位调整",
-                desc_fold_force: "⚠️ 第4天强制执行：系统接管，锁定最终作息。",
-                label_sleep: "Sleep At (入睡)",
-                label_wake: "Wake At (唤醒)"
-            },
-            en: {
-                step1: "Step 1: Last Sleep (Start)",
-                step2: "Step 2: Last Wake (End)",
-                step3: "Step 3: Target Zone (Target)",
-                step4: "Step 4: Select Algorithm (Algorithm)",
-                strat_sci_title: "⚡️ Smart Science",
-                strat_sci_desc: "Based on Phase Response Curves. Non-linear compression shifts 40%-75% of offset in 2 days, locking strictly on Day 3.",
-                strat_even_title: "⚖️ Linear Even", 
-                strat_even_desc: "Conservative approach. Distributes total offset evenly. Fixed daily shift (e.g., 2h/day).",
-                strat_fold_title: "🧬 Rapid Fold",
-                strat_fold_desc: "Efficient convergence. Eliminates 50% offset daily. Force complete by Day 4, snaps to schedule if target not met.",
-                strat_custom_title: "🛠 Custom Cycle (Custom)",
-                strat_custom_desc: "Manually specify duration (Scientific Architecture).",
-                btn_execute: "GENERATE COMMAND (EXECUTE)",
-                desc_sci: "Phase Compression: High-intensity shift",
-                desc_sci_final: "✅ Locked: Circadian Anchor Set",
-                day_prefix: "DAY",
-                desc_even: "Linear Even: Daily shift",
-                desc_fold_success: "✅ Target Met (20:00-23:00). Completed early.",
-                desc_fold_adjust: "🔄 Fold Convergence: Phase shift",
-                desc_fold_force: "⚠️ Day 4 Override: System takeover, final schedule locked.",
-                label_sleep: "Sleep At",
-                label_wake: "Wake At"
-            }
-        };
+    <div id="view-inputs" class="view-section max-w-2xl mx-auto">
 
-        let currentLang = 'zh';
+      <h3 class="text-emerald-500 text-xs font-bold uppercase mb-6 tracking-widest border-l-2 border-emerald-500 pl-3">
+        Phase 1: Data Injection
+      </h3>
 
-        function initLanguage() {
-            const browserLang = navigator.language || navigator.userLanguage; 
-            if (browserLang.startsWith('zh')) {
-                currentLang = 'zh';
-            } else {
-                currentLang = 'en';
-            }
-            applyLanguage();
+      <div class="space-y-8">
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
+            <span data-i18n="step1">Step 1: 上一次入睡时间</span>
+            <span class="info-trigger" onclick="goToView('info-sleep')" data-i18n="btn_what">[?] 这是什么</span>
+          </label>
+          <div class="split-input-container shadow-lg">
+            <div class="input-row">
+              <input type="date" id="sleepDate" class="custom-input flex-1">
+            </div>
+            <div class="input-row">
+              <input type="number" id="sleepHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
+              <span class="colon">:</span>
+              <input type="number" id="sleepMM" placeholder="MM" min="0" max="59" class="custom-input time-num flex-1">
+              <button id="sleepAMPM" class="ampm-toggle" onclick="toggleAMPM('sleepAMPM')">AM</button>
+            </div>
+            <div class="input-row">
+              <select id="sleepZone" class="zone-select w-full"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
+            <span data-i18n="step2">Step 2: 上一次起床时间</span>
+            <span class="info-trigger" onclick="goToView('info-wake')" data-i18n="btn_what">[?] 这是什么</span>
+          </label>
+          <div class="split-input-container shadow-lg">
+            <div class="input-row">
+              <input type="date" id="wakeDate" class="custom-input flex-1">
+            </div>
+            <div class="input-row">
+              <input type="number" id="wakeHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
+              <span class="colon">:</span>
+              <input type="number" id="wakeMM" placeholder="MM" min="0" max="59" class="custom-input time-num flex-1">
+              <button id="wakeAMPM" class="ampm-toggle" onclick="toggleAMPM('wakeAMPM')">AM</button>
+            </div>
+            <div class="input-row">
+              <select id="wakeZone" class="zone-select w-full"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-emerald-600 uppercase flex items-center justify-start">
+            <span data-i18n="step3">Step 3: 目标时区</span>
+            <span class="info-trigger border-emerald-900 text-emerald-600 hover:text-emerald-400"
+              onclick="goToView('info-target')" data-i18n="btn_what">[?] 这是什么</span>
+          </label>
+          <select id="targetZone"
+            class="w-full bg-slate-900 border border-emerald-900 text-emerald-500 p-4 text-sm focus:outline-none focus:border-emerald-500 rounded-none"></select>
+        </div>
+      </div>
+
+      <button onclick="goToView(2)" class="action-btn mt-8" data-i18n="btn_next">
+        下一步 >>
+      </button>
+    </div>
+
+    <div id="view-strategy" class="view-section">
+
+      <div class="space-y-4 mb-8">
+        <label class="text-xs font-bold text-white uppercase flex items-center justify-start">
+          <span data-i18n="step_dir">时差调整方向设置</span>
+          <span class="info-trigger" onclick="goToView('info-dir')" data-i18n="btn_what">[?] 这是什么</span>
+        </label>
+        <div class="flex gap-4 flex-col md:flex-row items-stretch">
+          <label class="dir-label">
+            <input type="radio" name="direction" value="smart" class="dir-radio radio-hidden" checked>
+            <div class="dir-btn">
+              <span class="dir-icon">🤖</span>
+              <span class="font-bold text-sm" data-i18n="dir_smart">智能判断 (推荐)</span>
+              <span class="text-xs text-slate-400 mt-1" data-i18n="dir_smart_desc">自动计算“早睡”与“熬夜”的生理代价，选择最优解。</span>
+            </div>
+          </label>
+          <label class="dir-label">
+            <input type="radio" name="direction" value="early" class="dir-radio radio-hidden">
+            <div class="dir-btn">
+              <span class="dir-icon">🛏️</span>
+              <span class="font-bold text-sm" data-i18n="dir_early">强制早睡</span>
+              <span class="text-xs text-slate-400 mt-1" data-i18n="dir_early_desc">强迫时钟前移，对身体更友好。</span>
+            </div>
+          </label>
+          <label class="dir-label">
+            <input type="radio" name="direction" value="late" class="dir-radio radio-hidden">
+            <div class="dir-btn">
+              <span class="dir-icon">☀️</span>
+              <span class="font-bold text-sm" data-i18n="dir_late">强制熬夜</span>
+              <span class="text-xs text-slate-400 mt-1" data-i18n="dir_late_desc">强迫时钟后移，仅推荐提前睡觉睡不着的。</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <label class="text-xs font-bold text-white uppercase flex items-center justify-start">
+          <span data-i18n="step_algo">选择算法模型</span>
+          <span class="info-trigger" onclick="goToView('info-algo')" data-i18n="btn_what">[?] 这是什么</span>
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <label>
+            <input type="radio" name="strategy" value="scientific" class="radio-hidden" checked>
+            <div class="strategy-card">
+              <div>
+                <div class="text-red-400 font-bold text-sm mb-1" data-i18n="strat_sci_title">⚡️ 智能科学 (推荐)</div>
+                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_sci_desc">模拟生理光照响应曲线
+                  (PRC)，采用指数级非线性步进。利用前期的睡眠剥夺积累睡眠压力，在最后一日强制完成生物钟锚定。</div>
+              </div>
+              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-500" data-i18n="duration">Duration:</span>
+                <div class="flex items-center">
+                  <input type="number" id="days_sci" value="3" min="2" max="5" class="days-input"
+                    onclick="event.stopPropagation()">
+                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <label>
+            <input type="radio" name="strategy" value="smart_even" class="radio-hidden">
+            <div class="strategy-card">
+              <div>
+                <div class="text-blue-400 font-bold text-sm mb-1" data-i18n="strat_even_title">⚖️ 线性均分</div>
+                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_even_desc">传统稳健。将时差平均分配到每一天。</div>
+              </div>
+              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-500" data-i18n="duration">Duration:</span>
+                <div class="flex items-center">
+                  <input type="number" id="days_even" value="3" min="2" max="5" class="days-input"
+                    onclick="event.stopPropagation()">
+                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <label>
+            <input type="radio" name="strategy" value="smart_fold" class="radio-hidden">
+            <div class="strategy-card">
+              <div>
+                <div class="text-emerald-400 font-bold text-sm mb-1" data-i18n="strat_fold_title">🧬 快速折中</div>
+                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_fold_desc">高效收敛。每日消除 50%。最后一天强制熔断。</div>
+              </div>
+              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
+                <span class="text-xs text-slate-500" data-i18n="duration">Max Duration:</span>
+                <div class="flex items-center">
+                  <input type="number" id="days_fold" value="4" min="2" max="5" class="days-input"
+                    onclick="event.stopPropagation()">
+                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex gap-4 mt-8">
+        <button onclick="goToView(1)"
+          class="flex-1 bg-slate-800 text-slate-400 font-bold py-4 text-xs uppercase hover:bg-slate-700 transition-colors">
+          &lt;&lt; Back
+        </button>
+        <button onclick="executeAndShow()"
+          class="flex-[2] bg-emerald-600 text-white font-bold py-4 text-sm uppercase tracking-widest hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-colors"
+          data-i18n="btn_execute">
+          生成指令 (EXECUTE)
+        </button>
+      </div>
+    </div>
+
+    <div id="view-results" class="view-section">
+      <div class="flex justify-between items-end border-b border-slate-800 pb-2 mb-6">
+        <div>
+          <h2 class="text-emerald-500 font-bold text-sm uppercase tracking-widest">Mission Protocol</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[10px] text-slate-500" data-i18n="view_zone">显示时区:</span>
+            <select id="displayZoneSelect" class="display-select" onchange="renderTimeline()"></select>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span id="directionBadge" class="text-[10px] bg-blue-900 text-blue-200 px-2 py-1 font-bold rounded">--</span>
+          <span id="offsetBadge"
+            class="text-[10px] bg-slate-900 text-slate-400 px-2 py-1 font-mono border border-slate-700">--</span>
+        </div>
+      </div>
+
+      <div id="timeline" class="space-y-4 pb-20"></div>
+
+      <div class="fixed bottom-6 left-0 w-full px-6 flex justify-center">
+        <button onclick="goToView(0)"
+          class="bg-slate-900 border border-slate-700 text-slate-400 px-6 py-3 rounded-full text-xs font-bold shadow-2xl hover:text-white hover:border-white transition-all uppercase tracking-widest">
+          ↻ Reset
+        </button>
+      </div>
+    </div>
+
+    <div id="info-sleep" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header" data-i18n="kb_id_01">DATA ANCHOR 01</h2>
+      <h3 class="kb-title" data-i18n="kb_sleep_title">生理锚点：生物钟基线</h3>
+      <p class="kb-text" data-i18n="kb_sleep_desc">
+        算法计算需要基于你身体当前的真实相位。
+        请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。
+        <br><br>
+        严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。
+        <br>
+        必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。
+      </p>
+      <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
+    </div>
+
+    <div id="info-wake" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header" data-i18n="kb_id_02">DATA ANCHOR 02</h2>
+      <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：皮质醇唤醒</h3>
+      <p class="kb-text" data-i18n="kb_wake_desc">
+        唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。
+        <br><br>
+        该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。
+      </p>
+      <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
+    </div>
+
+    <div id="info-target" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header" data-i18n="kb_id_03">TARGET FRAME</h2>
+      <h3 class="kb-title" data-i18n="kb_target_title">目标参考系</h3>
+      <p class="kb-text" data-i18n="kb_target_desc">
+        这是你试图将生物钟“平移”到的新时空坐标。
+        <br><br>
+        系统将计算你的生物时间 (Internal Time) 与该地理时间 (External Time) 之间的偏移量。请务必选择目的地的标准时间，而非中转地时间。
+      </p>
+      <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
+    </div>
+
+    <div id="info-dir" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header" data-i18n="kb_id_04">VECTOR CONTROL</h2>
+      <h3 class="kb-title" data-i18n="kb_dir_title">相位动力学</h3>
+      <p class="kb-text" data-i18n="kb_dir_desc">
+        人类的内源性节律周期平均约为 24.2 小时。这意味着“向后推迟 (Delay)”（如熬夜）顺应了生物惯性，在此方向上的调整阻力较小，生理代价较低。
+        <br><br>
+        相反，“向前提前 (Advance)”（如早起）需要压缩生物节律，是一个逆熵过程，难度较大。
+        <br><br>
+        <strong>智能判断</strong>模块通过计算两种路径的生理代价函数，自动为你选择能耗最低的方案。例如，虽然早睡 4 小时理论上更近，但身体可能无法执行，系统可能会建议通过熬夜 20 小时来达成同相同步。
+      </p>
+      <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
+    </div>
+
+    <div id="info-algo" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header" data-i18n="kb_id_05">COMPUTE KERNEL</h2>
+      <h3 class="kb-title" data-i18n="kb_algo_title">算法模型架构</h3>
+
+      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_sci_title">⚡️ 智能科学 (推荐)</h4>
+      <p class="kb-text" data-i18n="kb_algo_sci_desc">
+        非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。
+        <br>
+        逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75%
+        的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。
+      </p>
+
+      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_even_title">⚖️ 线性均分</h4>
+      <p class="kb-text" data-i18n="kb_algo_even_desc">
+        算术平均分布。将总时差绝对值平均切割。
+        <br>
+        这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。
+      </p>
+
+      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_fold_title">🧬 快速折中</h4>
+      <p class="kb-text" data-i18n="kb_algo_fold_desc">
+        渐进收敛模型。基于半衰期原理。
+        <br>
+        每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。
+      </p>
+      <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
+    </div>
+
+  </div>
+
+  <script>
+    const DateTime = luxon.DateTime;
+
+    // --- I18N ---
+    const translations = {
+      zh: {
+        welcome_title: "欢迎",
+        welcome_desc: "Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。",
+        btn_start: "开始",
+        btn_next: "下一步 >>",
+        btn_execute: "生成指令 (EXECUTE)",
+        btn_what: " [?] 说明",
+        btn_return: "<< 返回",
+
+        step1: "Step 1: 上一次入睡时间",
+        step2: "Step 2: 上一次起床时间",
+        step3: "Step 3: 目标时区",
+        step_dir: "时差调整方向设置",
+        step_algo: "选择算法模型",
+
+        dir_smart: "智能判断 (推荐)",
+        dir_smart_desc: "自动计算“早睡”与“熬夜”的生理代价，选择最优解。",
+        dir_early: "强制早睡",
+        dir_early_desc: "强迫时钟前移，对身体更友好。",
+        dir_late: "强制熬夜",
+        dir_late_desc: "强迫时钟后移，仅推荐提前睡觉睡不着的。",
+
+        strat_sci_title: "⚡️ 智能科学 (推荐)",
+        strat_sci_desc: "模拟生理光照响应曲线 (PRC)，采用指数级非线性步进。利用前期的睡眠剥夺积累睡眠压力，在最后一日强制完成生物钟锚定。",
+        strat_even_title: "⚖️ 线性均分",
+        strat_even_desc: "传统稳健。将时差平均分配到每一天。",
+        strat_fold_title: "🧬 快速折中",
+        strat_fold_desc: "高效收敛。每日消除 50%。最后一天强制熔断。",
+
+        duration: "周期/天数:",
+        view_zone: "显示时区:",
+        label_sleep: "入睡 (Sleep)",
+        label_wake: "唤醒 (Wake)",
+
+        desc_sci: "相位压缩：高强度非线性步进",
+        desc_sci_final: "✅ 强制闭环：光照锚定完成",
+        desc_even: "线性均分：每日调整",
+        desc_fold_success: "✅ 区间达标 (20:00-23:00)。提前完成。",
+        desc_fold_adjust: "折中收敛：相位调整",
+        desc_fold_force: "⚠️ 强制执行：系统接管，锁定最终作息。",
+        day_prefix: "DAY",
+
+        badge_smart_early: "MODE: 智能早睡",
+        badge_smart_late: "MODE: 智能熬夜",
+        badge_force_early: "MODE: 强制早睡",
+        badge_force_late: "MODE: 强制熬夜",
+
+        // KB
+        kb_id_01: "DATA ANCHOR 01",
+        kb_sleep_title: "生理锚点：生物钟基线",
+        kb_sleep_desc: "算法计算需要基于你身体当前的真实相位。请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。<br><br>严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。<br>必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。",
+
+        kb_id_02: "DATA ANCHOR 02",
+        kb_wake_title: "光照重置：皮质醇唤醒",
+        kb_wake_desc: "唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。<br><br>该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。",
+
+        kb_id_03: "TARGET FRAME",
+        kb_target_title: "目标参考系",
+        kb_target_desc: "这是你试图将生物钟“平移”到的新时空坐标。<br><br>系统将计算你的生物时间 (Internal Time) 与该地理时间 (External Time) 之间的偏移量。请务必选择目的地的标准时间，而非中转地时间。",
+
+        kb_id_04: "VECTOR CONTROL",
+        kb_dir_title: "相位动力学",
+        kb_dir_desc: "人类的内源性节律周期平均约为 24.2 小时。这意味着“向后推迟 (Delay)”（如熬夜）顺应了生物惯性，在此方向上的调整阻力较小，生理代价较低。<br><br>相反，“向前提前 (Advance)”（如早起）需要压缩生物节律，是一个逆熵过程，难度较大。<br><br><strong>智能判断</strong>模块通过计算两种路径的生理代价函数，自动为你选择能耗最低的方案。例如，虽然早睡 4 小时理论上更近，但身体可能无法执行，系统可能会建议通过熬夜 20 小时来达成同相同步。",
+
+        kb_id_05: "COMPUTE KERNEL",
+        kb_algo_title: "算法模型架构",
+        kb_algo_sci_desc: "非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。<br>逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75% 的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。",
+        kb_algo_even_desc: "算术平均分布。将总时差绝对值平均切割。<br>这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。",
+        kb_algo_fold_desc: "渐进收敛模型。基于半衰期原理。<br>每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。"
+      },
+      en: {
+        welcome_title: "Welcome",
+        welcome_desc: "Jetlag Commander is a smart web tool for adjusting jet lag, helping you scientifically adjust jet lag, including transcontinental flights and staying up late.",
+        btn_start: "Start",
+        btn_next: "NEXT STEP >>",
+        btn_execute: "EXECUTE PROTOCOL",
+        btn_what: " [?] Info",
+        btn_return: "<< RETURN",
+
+        step1: "Step 1: Last Sleep Time",
+        step2: "Step 2: Last Wake Time",
+        step3: "Step 3: Target Zone",
+        step_dir: "Direction Control",
+        step_algo: "Algorithm Model",
+
+        dir_smart: "Smart Auto (Rec)",
+        dir_smart_desc: "Calculates physiological cost of Advance vs Delay.",
+        dir_early: "Force Early",
+        dir_early_desc: "Forces clock advance. Friendlier to the body.",
+        dir_late: "Force Late",
+        dir_late_desc: "Forces clock delay. Only recommended if unable to sleep early.",
+
+        strat_sci_title: "⚡️ Smart Science (Rec)",
+        strat_sci_desc: "Simulates Physiological Phase Response Curve (PRC) using exponential non-linear stepping. Utilizes sleep deprivation pressure from early stages to force a circadian anchor on the final day.",
+        strat_even_title: "⚖️ Linear Even",
+        strat_even_desc: "Conservative. Distributes offset evenly.",
+        strat_fold_title: "🧬 Rapid Fold",
+        strat_fold_desc: "Efficient convergence (50%/day). Force snap.",
+
+        duration: "Duration:",
+        view_zone: "View:",
+        label_sleep: "Sleep At",
+        label_wake: "Wake At",
+
+        desc_sci: "Phase Compression: High-intensity shift",
+        desc_sci_final: "✅ Locked: Circadian Anchor Set",
+        desc_even: "Linear Even: Daily shift",
+        desc_fold_success: "✅ Target Met (20:00-23:00).",
+        desc_fold_adjust: "Fold Convergence: Phase shift",
+        desc_fold_force: "⚠️ Override: System takeover.",
+        day_prefix: "DAY",
+
+        badge_smart_early: "MODE: SMART EARLY",
+        badge_smart_late: "MODE: SMART LATE",
+        badge_force_early: "MODE: FORCE EARLY",
+        badge_force_late: "MODE: FORCE LATE",
+
+        // KB - English Translation
+        kb_id_01: "DATA ANCHOR 01",
+        kb_sleep_title: "Biological Anchor: Baseline Onset",
+        kb_sleep_desc: "Calculation relies on your current <strong>biological phase</strong>. Please input your <strong>actual last sleep time</strong> (when your central nervous system shut down).<br><br>Do not input: Flight takeoff time or planned bedtime.<br>Must input: The time you actually fell asleep. This is the physical baseline for melatonin onset calculation.",
+
+        kb_id_02: "DATA ANCHOR 02",
+        kb_wake_title: "Photic Reset: Cortisol Awakening",
+        kb_wake_desc: "Wake time marks the moment the Suprachiasmatic Nucleus (SCN) receives the first light signal, triggering the cortisol pulse.<br><br>This defines your current \"subjective day\" length. The algorithm calculates the Phase Difference (Δt) between your internal rhythm and the target zone based on this. Accuracy here determines efficiency.",
+
+        kb_id_03: "TARGET FRAME",
+        kb_target_title: "Reference Frame",
+        kb_target_desc: "This is the new spatio-temporal coordinate you are trying to \"shift\" your body into.<br><br>The system calculates the offset between your Internal Time and this External Time. Please select the standard time of your destination, not layover times.",
+
+        kb_id_04: "VECTOR CONTROL",
+        kb_dir_title: "Phase Dynamics",
+        kb_dir_desc: "The human intrinsic circadian period averages ~24.2 hours. Thus, \"Delaying\" (staying up late/flying West) aligns with biological inertia and causes less physiological stress.<br><br>Conversely, \"Advancing\" (waking early/flying East) requires compressing the rhythm, which is an anti-entropic process and much harder.<br><br><strong>Smart Auto</strong> calculates the physiological cost function for both paths and selects the lowest-energy solution. e.g., instead of advancing 4 hours (hard), it might suggest delaying 20 hours (easier).",
+
+        kb_id_05: "COMPUTE KERNEL",
+        kb_algo_title: "Algorithm Architecture",
+        kb_algo_sci_desc: "Non-linear phase compression. Simulates Phase Response Curve (PRC).<br>Logic: Uses sleep pressure in first 2/3 of cycle to force 75% shift, then anchors on final day. Most efficient.",
+        kb_algo_even_desc: "Arithmetic mean distribution. Splits Δt evenly over N days.<br>Predictable but inefficient for large gaps.",
+        kb_algo_fold_desc: "Half-life convergence. Eliminates 50% of remaining offset daily.<br>Fast start, exponential decay. Includes a \"hard snap\" at the end."
+      }
+    };
+
+    let currentLang = 'zh';
+    let globalPlan = [];
+
+    // --- WIZARD LOGIC ---
+    function goToView(targetId) {
+      // If targetId is number, convert to ID string (legacy support for buttons)
+      if (typeof targetId === 'number') {
+        if (targetId === 0) targetId = 'view-welcome';
+        else if (targetId === 1) targetId = 'view-inputs';
+        else if (targetId === 2) {
+          // Validation
+          const s = getSplitDateTime('sleep');
+          const w = getSplitDateTime('wake');
+          if (!s || !w || !s.isValid || !w.isValid) {
+            alert("INVALID TIME DATA. CHECK INPUTS.");
+            document.getElementById('view-inputs').classList.add('active');
+            return;
+          }
+          if (w <= s) {
+            alert("TEMPORAL PARADOX: Wake time must be after Sleep time.");
+            document.getElementById('view-inputs').classList.add('active');
+            return;
+          }
+          targetId = 'view-strategy';
+        }
+        else if (targetId === 3) targetId = 'view-results';
+      }
+
+      document.querySelectorAll('.view-section').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById(targetId).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // --- EXECUTE & RENDER ---
+    function executeAndShow() {
+      try {
+        execute();
+        goToView(3);
+        setTimeout(() => {
+          renderTimeline();
+        }, 10);
+      } catch (e) {
+        console.error(e);
+        alert("CALCULATION ERROR.");
+      }
+    }
+
+    // --- UI UTILS ---
+    function initSplitInputs() {
+      const now = DateTime.now();
+      const sleepInit = now.minus({ hours: 8 });
+      const wakeInit = now;
+
+      document.getElementById('sleepDate').value = sleepInit.toFormat('yyyy-MM-dd');
+      let sH = sleepInit.hour;
+      let sIsPM = sH >= 12;
+      if (sH === 0) sH = 12; else if (sH > 12) sH -= 12;
+      document.getElementById('sleepHH').value = sH;
+      document.getElementById('sleepMM').value = sleepInit.minute;
+      setAMPM('sleepAMPM', sIsPM);
+
+      document.getElementById('wakeDate').value = wakeInit.toFormat('yyyy-MM-dd');
+      let wH = wakeInit.hour;
+      let wIsPM = wH >= 12;
+      if (wH === 0) wH = 12; else if (wH > 12) wH -= 12;
+      document.getElementById('wakeHH').value = wH;
+      document.getElementById('wakeMM').value = wakeInit.minute;
+      setAMPM('wakeAMPM', wIsPM);
+    }
+
+    function toggleAMPM(id) {
+      const btn = document.getElementById(id);
+      const isPM = btn.innerText === 'PM';
+      setAMPM(id, !isPM);
+    }
+
+    function setAMPM(id, isPM) {
+      const btn = document.getElementById(id);
+      if (isPM) {
+        btn.innerText = 'PM';
+        btn.classList.add('pm-active');
+        btn.classList.remove('am-active');
+      } else {
+        btn.innerText = 'AM';
+        btn.classList.add('am-active');
+        btn.classList.remove('pm-active');
+      }
+    }
+
+    function getSplitDateTime(prefix) {
+      const dateStr = document.getElementById(prefix + 'Date').value;
+      let hh = parseInt(document.getElementById(prefix + 'HH').value);
+      const mm = parseInt(document.getElementById(prefix + 'MM').value);
+      const isPM = document.getElementById(prefix + 'AMPM').innerText === 'PM';
+      const zone = document.getElementById(prefix + 'Zone').value;
+
+      if (!dateStr || isNaN(hh) || isNaN(mm)) return null;
+      if (isPM && hh < 12) hh += 12;
+      if (!isPM && hh === 12) hh = 0;
+
+      const timeStr = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+      return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
+    }
+
+    // --- INIT & I18N ---
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const t = translations[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          el.innerHTML = t[key];
+        }
+      });
+      document.getElementById('langBtn').innerText = currentLang === 'zh' ? 'EN / 中' : 'CN / EN';
+      if (document.getElementById('view-results').classList.contains('active')) renderTimeline();
+    }
+
+    // --- TIMEZONE CONFIG ---
+    const rawTimezones = [
+      // Asia
+      "Asia/Shanghai", "Asia/Tokyo", "Asia/Singapore", "Asia/Kuala_Lumpur", "Asia/Bangkok",
+      "Asia/Dubai", "Asia/Seoul", "Asia/Kolkata", "Asia/Hong_Kong", "Asia/Mumbai",
+      // Oceania
+      "Australia/Melbourne", "Australia/Sydney", "Australia/Brisbane", "Australia/Adelaide", "Australia/Perth", "Pacific/Auckland",
+      // Europe
+      "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome", "Europe/Amsterdam",
+      "Europe/Moscow", "Europe/Istanbul", "Europe/Zurich", "Europe/Madrid",
+      // Americas
+      "America/New_York", "America/Los_Angeles", "America/Toronto", "America/Vancouver",
+      "America/Mexico_City", "America/Sao_Paulo",
+      // Africa
+      "Africa/Johannesburg"
+    ];
+
+    function formatZoneDisplay(tz) {
+      if (tz === "Asia/Shanghai") return "Asia/China";
+      if (tz === "Asia/Hong_Kong") return "Asia/Hong Kong";
+      if (tz.startsWith("America/")) {
+        if (tz.includes("Sao_Paulo")) return "South America/Brazil";
+        if (tz.includes("Mexico")) return "North America/Mexico";
+        return tz.replace("America/", "North America/");
+      }
+      return tz;
+    }
+
+    const populate = (id, def) => {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+      rawTimezones.sort().forEach(tz => {
+        const disp = formatZoneDisplay(tz);
+        el.add(new Option(disp, tz));
+      });
+
+      const userZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (!rawTimezones.includes(userZone)) {
+        el.add(new Option(userZone, userZone));
+      }
+
+      el.value = def || userZone;
+    };
+
+    populate('sleepZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    populate('targetZone', "Asia/Shanghai");
+    populate('displayZoneSelect', "Asia/Shanghai");
+
+    initSplitInputs();
+
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
+    applyLanguage();
+
+
+    // --- LOGIC ---
+    function execute() {
+      const t = translations[currentLang];
+      const lastSleep = getSplitDateTime('sleep');
+      const lastWake = getSplitDateTime('wake');
+      const tZone = document.getElementById('targetZone').value;
+      const strategy = document.querySelector('input[name="strategy"]:checked').value;
+      const directionMode = document.querySelector('input[name="direction"]:checked').value;
+
+      const wakeInTarget = lastWake.setZone(tZone);
+      let idealWake = wakeInTarget.set({ hour: 7, minute: 0, second: 0 });
+      let diffRaw = idealWake.diff(wakeInTarget, 'hours').hours;
+
+      if (diffRaw > 12) diffRaw -= 24; else if (diffRaw < -12) diffRaw += 24;
+
+      let diffAdvance, diffDelay;
+      if (diffRaw <= 0) { diffAdvance = diffRaw; diffDelay = diffRaw + 24; }
+      else { diffAdvance = diffRaw - 24; diffDelay = diffRaw; }
+
+      let finalDiff;
+      let finalMode = "";
+
+      if (directionMode === 'early') {
+        finalDiff = diffAdvance; finalMode = "ADVANCE";
+      } else if (directionMode === 'late') {
+        finalDiff = diffDelay; finalMode = "DELAY";
+      } else {
+        const costAdvance = Math.abs(diffAdvance) * 1.5;
+        const costDelay = Math.abs(diffDelay) * 1.0;
+        if (costAdvance < costDelay) { finalDiff = diffAdvance; finalMode = "ADVANCE"; }
+        else { finalDiff = diffDelay; finalMode = "DELAY"; }
+      }
+
+      const badge = document.getElementById('directionBadge');
+      let badgeKey = "";
+      let badgeColor = "";
+
+      if (finalMode === "ADVANCE") {
+        badgeColor = "text-[10px] bg-purple-900 text-purple-200 px-2 py-1 font-bold rounded";
+        badgeKey = directionMode === 'smart' ? 'badge_smart_early' : 'badge_force_early';
+      } else {
+        badgeColor = "text-[10px] bg-orange-900 text-orange-200 px-2 py-1 font-bold rounded";
+        badgeKey = directionMode === 'smart' ? 'badge_smart_late' : 'badge_force_late';
+      }
+
+      badge.innerText = t[badgeKey];
+      badge.className = badgeColor;
+      badge.dataset.key = badgeKey;
+
+      let durationDays = 3;
+      if (strategy === 'scientific') durationDays = parseInt(document.getElementById('days_sci').value);
+      else if (strategy === 'smart_even') durationDays = parseInt(document.getElementById('days_even').value);
+      else if (strategy === 'smart_fold') durationDays = parseInt(document.getElementById('days_fold').value);
+
+      globalPlan = [];
+
+      if (strategy === 'scientific') {
+        for (let i = 1; i <= durationDays; i++) {
+          let ratio = Math.pow(i / durationDays, 0.7);
+          let shiftAmount = finalDiff * ratio;
+          let dayWake = wakeInTarget.plus({ hours: (24 * i) + shiftAmount });
+          let daySleep = dayWake.minus({ hours: 8 });
+          let currentShift = finalDiff * (ratio - Math.pow((i - 1) / durationDays, 0.7));
+
+          globalPlan.push({
+            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
+            shift: currentShift, type: 'sci', isFinal: i === durationDays
+          });
+        }
+      } else if (strategy === 'smart_even') {
+        const step = finalDiff / durationDays;
+        for (let i = 1; i <= durationDays; i++) {
+          let dayWake = wakeInTarget.plus({ hours: 24 * i + (step * i) });
+          let daySleep = dayWake.minus({ hours: 8 });
+          globalPlan.push({
+            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
+            shift: step, type: 'even', isFinal: false
+          });
+        }
+      } else if (strategy === 'smart_fold') {
+        for (let i = 1; i <= durationDays; i++) {
+          let remainingRatio = Math.pow(0.5, i);
+          let completedRatio = 1 - remainingRatio;
+          if (i === durationDays) completedRatio = 1.0;
+
+          let totalShiftSoFar = finalDiff * completedRatio;
+          let dayWake = wakeInTarget.plus({ hours: (24 * i) + totalShiftSoFar });
+          let daySleep = dayWake.minus({ hours: 8 });
+
+          let sleepHour = daySleep.hour;
+          let success = (sleepHour >= 20 && sleepHour < 23);
+          let moveAmount = Math.abs(totalShiftSoFar - (finalDiff * (1 - Math.pow(0.5, i - 1))));
+
+          globalPlan.push({
+            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
+            shift: moveAmount, type: 'fold', success: success, isFinal: i === durationDays
+          });
+          if (success) break;
+        }
+      }
+
+      document.getElementById('offsetBadge').innerText = `SHIFT: ${finalDiff > 0 ? '+' : ''}${finalDiff.toFixed(1)}H`;
+      populate('displayZoneSelect', tZone);
+    }
+
+    function renderTimeline() {
+      const t = translations[currentLang];
+      const container = document.getElementById('timeline');
+      container.innerHTML = "";
+
+      const displayZone = document.getElementById('displayZoneSelect').value;
+      const badge = document.getElementById('directionBadge');
+      if (badge.dataset.key) badge.innerText = t[badge.dataset.key];
+
+      globalPlan.forEach(item => {
+        const dispSleep = item.sleepTime.setZone(displayZone);
+        const dispWake = item.wakeTime.setZone(displayZone);
+
+        let desc = "";
+        if (item.type === 'sci') desc = item.isFinal ? t.desc_sci_final : `${t.desc_sci} ${Math.abs(item.shift).toFixed(1)}h`;
+        else if (item.type === 'even') desc = `${t.desc_even} ${Math.abs(item.shift).toFixed(1)}h`;
+        else if (item.type === 'fold') {
+          if (item.isFinal) desc = t.desc_fold_force;
+          else if (item.success) desc = t.desc_fold_success;
+          else desc = `${t.desc_fold_adjust} ${item.shift.toFixed(1)}h`;
         }
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            applyLanguage();
-        }
-
-        function applyLanguage() {
-            const t = translations[currentLang];
-            
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    if (key.includes('desc')) {
-                        let formattedText = t[key].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                         el.innerHTML = formattedText;
-                    } else {
-                        el.innerText = t[key];
-                    }
-                }
-            });
-
-            const btn = document.getElementById('langBtn');
-            btn.innerText = currentLang === 'zh' ? 'EN / 中' : 'CN / EN';
-
-            if (!document.getElementById('resultArea').classList.contains('hidden')) {
-                execute();
-            }
-        }
-        
-        const commonTimezones = [
-            "Asia/Shanghai", "Asia/Tokyo", "Asia/Singapore", "Asia/Dubai",
-            "Australia/Melbourne", "Australia/Sydney", 
-            "Europe/London", "Europe/Paris", "Europe/Berlin",
-            "America/New_York", "America/Los_Angeles"
-        ];
-        
-        const populate = (id, def) => {
-            const el = document.getElementById(id);
-            commonTimezones.sort().forEach(tz => el.add(new Option(tz, tz)));
-            const userZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            if(!commonTimezones.includes(userZone)) el.add(new Option(userZone, userZone));
-            el.value = def || userZone;
-        };
-
-        populate('sleepZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
-        populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
-        populate('targetZone', "Asia/Shanghai");
-        
-        const now = DateTime.now();
-        document.getElementById('sleepTime').value = now.minus({hours:8}).toFormat("yyyy-MM-dd'T'HH:mm");
-        document.getElementById('wakeTime').value = now.toFormat("yyyy-MM-dd'T'HH:mm");
-
-        initLanguage();
-
-        function toggleCustom() {
-            const mode = document.querySelector('input[name="strategy"]:checked').value;
-            document.getElementById('customInput').classList.toggle('hidden', mode !== 'custom');
-        }
-
-        function execute() {
-            const t = translations[currentLang]; 
-            
-            const sTime = document.getElementById('sleepTime').value;
-            const sZone = document.getElementById('sleepZone').value;
-            const wTime = document.getElementById('wakeTime').value;
-            const wZone = document.getElementById('wakeZone').value;
-            const tZone = document.getElementById('targetZone').value;
-            const strategy = document.querySelector('input[name="strategy"]:checked').value;
-
-            if(!sTime || !wTime) return alert("System Error: Check inputs.");
-
-            const lastSleep = DateTime.fromISO(sTime, { zone: sZone });
-            const lastWake = DateTime.fromISO(wTime, { zone: wZone });
-            
-            const wakeInTarget = lastWake.setZone(tZone);
-            let idealWake = wakeInTarget.set({ hour: 7, minute: 0, second: 0 });
-            
-            let diff = idealWake.diff(wakeInTarget, 'hours').hours;
-            if (diff > 12) diff -= 24; else if (diff < -12) diff += 24;
-
-            let plan = [];
-
-            if (strategy === 'scientific' || strategy === 'custom') {
-                let days = 3;
-                if (strategy === 'custom') days = parseInt(document.getElementById('customDays').value);
-                
-                for (let i = 1; i <= days; i++) {
-                    let ratio = Math.pow(i / days, 0.7);
-                    
-                    let shiftAmount = diff * ratio;
-                    let dayWake = wakeInTarget.plus({ hours: (24 * i) + shiftAmount });
-                    let daySleep = dayWake.minus({ hours: 8 });
-                    
-                    let desc = i === days
-                        ? t.desc_sci_final 
-                        : `${t.desc_sci} ${Math.abs(diff * (ratio - Math.pow((i-1)/days, 0.7))).toFixed(1)}h`;
-
-                    plan.push({
-                        day: `${t.day_prefix} ${i}/${days}`,
-                        sleepTime: daySleep,
-                        wakeTime: dayWake,
-                        desc: desc
-                    });
-                }
-            }
-            
-            else if (strategy === 'smart_even') {
-                let days = 3; 
-                const step = diff / days;
-
-                for (let i = 1; i <= days; i++) {
-                    let dayWake = wakeInTarget.plus({ hours: 24 * i + (step * i) });
-                    let daySleep = dayWake.minus({ hours: 8 });
-                    plan.push({
-                        day: `${t.day_prefix} ${i}/${days}`,
-                        sleepTime: daySleep,
-                        wakeTime: dayWake,
-                        desc: `${t.desc_even} ${step.toFixed(1)}h`
-                    });
-                }
-            }
-
-            else if (strategy === 'smart_fold') {
-                let currentVirtualWake = wakeInTarget; 
-                const maxDays = 4;
-                let isComplete = false;
-
-                for (let i = 1; i <= maxDays; i++) {
-                    let currentIdeal = currentVirtualWake.set({ hour: 7, minute: 0 });
-                    let phaseDiff = currentIdeal.diff(currentVirtualWake, 'hours').hours;
-                    if (phaseDiff > 12) phaseDiff -= 24; else if (phaseDiff < -12) phaseDiff += 24;
-
-                    let move = phaseDiff * 0.5;
-                    let nextWake = currentVirtualWake.plus({ hours: 24 + move });
-                    let nextSleep = nextWake.minus({ hours: 8 });
-
-                    let sleepHour = nextSleep.hour;
-                    let success = (sleepHour >= 20 && sleepHour < 23);
-                    let desc = `${t.desc_fold_adjust} ${move.toFixed(1)}h (50%)`;
-
-                    if (i === maxDays && !success) {
-                        let snappedSleep = nextSleep.set({ minute: 0 });
-                        if (sleepHour < 20 && sleepHour > 6) {
-                            snappedSleep = snappedSleep.set({ hour: 20 });
-                        } else {
-                            snappedSleep = snappedSleep.set({ hour: 23 });
-                        }
-                        nextSleep = snappedSleep;
-                        nextWake = nextSleep.plus({ hours: 8 });
-                        success = true;
-                        desc = t.desc_fold_force;
-                    } else if (success) {
-                        desc = t.desc_fold_success;
-                    }
-
-                    plan.push({
-                        day: `${t.day_prefix} ${i}`,
-                        sleepTime: nextSleep,
-                        wakeTime: nextWake,
-                        desc: desc
-                    });
-
-                    if (success) break;
-                    currentVirtualWake = nextWake;
-                }
-            }
-
-            const container = document.getElementById('timeline');
-            container.innerHTML = "";
-            document.getElementById('resultArea').classList.remove('hidden');
-            document.getElementById('offsetBadge').innerText = `OFFSET: ${diff.toFixed(1)}H`;
-
-            plan.forEach(item => {
-                const row = document.createElement('div');
-                row.className = "hard-card p-6"; 
-                
-                row.innerHTML = `
+        const row = document.createElement('div');
+        row.className = "hard-card p-6";
+        // Grid 2-col layout (Left Blue, Right Orange)
+        row.innerHTML = `
                     <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
-                        <span class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1">${item.day}</span>
-                        <span class="text-xs text-emerald-500 font-mono">${item.desc}</span>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1">${t.day_prefix} ${item.i}/${item.totalDays}</span>
+                        <span class="text-[10px] text-emerald-500 font-mono text-right max-w-[60%] leading-tight">${desc}</span>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 gap-6">
                         <div class="sleep-border bg-slate-950 p-4 pl-5">
-                            <p class="text-xs text-blue-500 font-bold mb-2 uppercase tracking-wider">${t.label_sleep}</p>
-                            <p class="text-3xl font-bold text-white font-mono">${item.sleepTime.toFormat('HH:mm')}</p>
-                            <p class="text-xs text-slate-500 mt-1">${item.sleepTime.toFormat('MM-dd (cccc)')}</p>
+                            <p class="text-[10px] text-blue-500 font-bold mb-1 uppercase tracking-wider">${t.label_sleep}</p>
+                            <p class="text-3xl font-bold text-white font-mono">${dispSleep.toFormat('HH:mm')}</p>
+                            <p class="text-xs text-slate-500 mt-1">${dispSleep.toFormat('MM-dd (cccc)')}</p>
                         </div>
                         <div class="wake-border bg-slate-950 p-4 pl-5">
-                            <p class="text-xs text-orange-500 font-bold mb-2 uppercase tracking-wider">${t.label_wake}</p>
-                            <p class="text-3xl font-bold text-white font-mono">${item.wakeTime.toFormat('HH:mm')}</p>
-                            <p class="text-xs text-slate-500 mt-1">${item.wakeTime.toFormat('MM-dd (cccc)')}</p>
+                            <p class="text-[10px] text-orange-500 font-bold mb-1 uppercase tracking-wider">${t.label_wake}</p>
+                            <p class="text-3xl font-bold text-white font-mono">${dispWake.toFormat('HH:mm')}</p>
+                            <p class="text-xs text-slate-500 mt-1">${dispWake.toFormat('MM-dd (cccc)')}</p>
                         </div>
                     </div>
                 `;
-                container.appendChild(row);
-            });
-        }
-    </script>
+        container.appendChild(row);
+      });
+    }
+  </script>
 </body>
+
 </html>
