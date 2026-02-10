@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V10.2</title>
+  <title>JETLAG COMMANDER // V10.9.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
   <style>
@@ -185,9 +185,15 @@
       border-color: #10b981;
     }
 
-    input[type="date"] {
-      flex: 2;
-      text-transform: uppercase;
+    /* Remove spinners */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
     }
 
     .time-num {
@@ -216,11 +222,20 @@
       background: #000;
       border: 1px solid #475569;
       color: white;
-      width: 60px;
+      width: 50px;
       text-align: center;
-      padding: 4px;
-      font-size: 0.8rem;
-      margin-left: 8px;
+      padding: 6px;
+      font-size: 0.9rem;
+      margin: 0 8px;
+    }
+
+    .card-footer {
+      border-top: 1px solid #334155;
+      padding-top: 1rem;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .display-select {
@@ -275,7 +290,11 @@
       border-color: #10b981;
     }
 
-    /* Knowledge Base Styling */
+    .text-yellow-cyber {
+      color: #fbbf24;
+    }
+
+    /* Knowledge Base */
     .kb-header {
       color: #10b981;
       font-weight: bold;
@@ -300,30 +319,17 @@
       line-height: 1.6;
       margin-bottom: 1.5rem;
     }
-
-    .kb-highlight {
-      color: #e2e8f0;
-      font-weight: bold;
-    }
-
-    .kb-sub {
-      color: #64748b;
-      font-size: 0.75rem;
-      margin-top: -1rem;
-      margin-bottom: 1.5rem;
-      display: block;
-    }
   </style>
 </head>
 
 <body class="min-h-screen flex flex-col items-center justify-start pt-4 pb-12 px-4 md:pt-12">
 
-  <div class="w-full max-w-4xl relative">
+  <div class="w-full max-w-6xl relative">
 
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.2 by Louie Tang</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.9.1 by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -351,13 +357,18 @@
 
       <div class="space-y-8">
         <div class="space-y-2">
-          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
+          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start flex-wrap gap-2">
             <span data-i18n="step1">Step 1: 上一次入睡时间</span>
+            <span class="text-[10px] text-slate-600 font-mono tracking-tight opacity-70">FMT: YYYY/MM/DD</span>
             <span class="info-trigger" onclick="goToView('info-sleep')" data-i18n="btn_what">[?] 这是什么</span>
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="date" id="sleepDate" class="custom-input flex-1">
+              <input type="number" id="sleepYear" placeholder="YYYY" class="custom-input w-24">
+              <span class="colon text-slate-600">/</span>
+              <input type="number" id="sleepMonth" placeholder="MM" class="custom-input flex-1">
+              <span class="colon text-slate-600">/</span>
+              <input type="number" id="sleepDay" placeholder="DD" class="custom-input flex-1">
             </div>
             <div class="input-row">
               <input type="number" id="sleepHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
@@ -372,13 +383,18 @@
         </div>
 
         <div class="space-y-2">
-          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
+          <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start flex-wrap gap-2">
             <span data-i18n="step2">Step 2: 上一次起床时间</span>
+            <span class="text-[10px] text-slate-600 font-mono tracking-tight opacity-70">FMT: YYYY/MM/DD</span>
             <span class="info-trigger" onclick="goToView('info-wake')" data-i18n="btn_what">[?] 这是什么</span>
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="date" id="wakeDate" class="custom-input flex-1">
+              <input type="number" id="wakeYear" placeholder="YYYY" class="custom-input w-24">
+              <span class="colon text-slate-600">/</span>
+              <input type="number" id="wakeMonth" placeholder="MM" class="custom-input flex-1">
+              <span class="colon text-slate-600">/</span>
+              <input type="number" id="wakeDay" placeholder="DD" class="custom-input flex-1">
             </div>
             <div class="input-row">
               <input type="number" id="wakeHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
@@ -449,40 +465,41 @@
           <span class="info-trigger" onclick="goToView('info-algo')" data-i18n="btn_what">[?] 这是什么</span>
         </label>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
           <label>
-            <input type="radio" name="strategy" value="scientific" class="radio-hidden" checked>
+            <input type="radio" name="strategy" value="bio_adaptive" class="radio-hidden" checked>
             <div class="strategy-card">
               <div>
-                <div class="text-red-400 font-bold text-sm mb-1" data-i18n="strat_sci_title">⚡️ 智能科学 (推荐)</div>
-                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_sci_desc">模拟生理光照响应曲线
-                  (PRC)，采用指数级非线性步进。利用前期的睡眠剥夺积累睡眠压力，在最后一日强制完成生物钟锚定。</div>
+                <div class="text-yellow-cyber font-bold text-sm" data-i18n="strat_bio_title">⚡️🧪 新智能模式(Beta)</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_bio_desc">
+                  不强制8小时睡眠。根据时差方向动态压缩或延长睡眠时间 (6-10h)，利用睡眠压力进行相位重塑。</div>
               </div>
-              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
-                <span class="text-xs text-slate-500" data-i18n="duration">Duration:</span>
+              <div class="card-footer">
+                <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
-                  <input type="number" id="days_sci" value="3" min="2" max="5" class="days-input"
+                  <input type="number" id="days_bio" value="3" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
-                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                  <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
               </div>
             </div>
           </label>
 
           <label>
-            <input type="radio" name="strategy" value="smart_even" class="radio-hidden">
+            <input type="radio" name="strategy" value="scientific" class="radio-hidden">
             <div class="strategy-card">
               <div>
-                <div class="text-blue-400 font-bold text-sm mb-1" data-i18n="strat_even_title">⚖️ 线性均分</div>
-                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_even_desc">传统稳健。将时差平均分配到每一天。</div>
+                <div class="text-red-400 font-bold text-sm" data-i18n="strat_sci_title">⚡️ 智能科学</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_sci_desc">模拟生理光照响应曲线
+                  (PRC)。非线性步进。</div>
               </div>
-              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
-                <span class="text-xs text-slate-500" data-i18n="duration">Duration:</span>
+              <div class="card-footer">
+                <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
-                  <input type="number" id="days_even" value="3" min="2" max="5" class="days-input"
+                  <input type="number" id="days_sci" value="3" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
-                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                  <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
               </div>
             </div>
@@ -492,19 +509,40 @@
             <input type="radio" name="strategy" value="smart_fold" class="radio-hidden">
             <div class="strategy-card">
               <div>
-                <div class="text-emerald-400 font-bold text-sm mb-1" data-i18n="strat_fold_title">🧬 快速折中</div>
-                <div class="text-xs text-slate-400 mb-4" data-i18n="strat_fold_desc">高效收敛。每日消除 50%。最后一天强制熔断。</div>
+                <div class="text-emerald-400 font-bold text-sm" data-i18n="strat_fold_title">🧬 快速折中</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_fold_desc">高效收敛。每日消除
+                  50%。最后一天强制熔断。</div>
               </div>
-              <div class="border-t border-slate-700 pt-3 flex items-center justify-between">
-                <span class="text-xs text-slate-500" data-i18n="duration">Max Duration:</span>
+              <div class="card-footer">
+                <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
                   <input type="number" id="days_fold" value="4" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
-                  <span class="text-xs text-slate-500 ml-1">Days</span>
+                  <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
               </div>
             </div>
           </label>
+
+          <label>
+            <input type="radio" name="strategy" value="smart_even" class="radio-hidden">
+            <div class="strategy-card">
+              <div>
+                <div class="text-blue-400 font-bold text-sm" data-i18n="strat_even_title">⚖️ 线性均分</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_even_desc">传统稳健。将时差平均分配到每一天。
+                </div>
+              </div>
+              <div class="card-footer">
+                <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
+                <div class="flex items-center">
+                  <input type="number" id="days_even" value="3" min="2" max="5" class="days-input"
+                    onclick="event.stopPropagation()">
+                  <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
+                </div>
+              </div>
+            </div>
+          </label>
+
         </div>
       </div>
 
@@ -549,27 +587,16 @@
 
     <div id="info-sleep" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_01">DATA ANCHOR 01</h2>
-      <h3 class="kb-title" data-i18n="kb_sleep_title">生理锚点：生物钟基线</h3>
-      <p class="kb-text" data-i18n="kb_sleep_desc">
-        算法计算需要基于你身体当前的真实相位。
-        请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。
-        <br><br>
-        严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。
-        <br>
-        必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。
-      </p>
+      <h3 class="kb-title" data-i18n="kb_sleep_title">锚点一：入睡时间</h3>
+      <p class="kb-text" data-i18n="kb_sleep_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
 
     <div id="info-wake" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_02">DATA ANCHOR 02</h2>
-      <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：皮质醇唤醒</h3>
-      <p class="kb-text" data-i18n="kb_wake_desc">
-        唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。
-        <br><br>
-        该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。
-      </p>
+      <h3 class="kb-title" data-i18n="kb_wake_title">锚点二：起床时间</h3>
+      <p class="kb-text" data-i18n="kb_wake_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
@@ -577,11 +604,7 @@
     <div id="info-target" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_03">TARGET FRAME</h2>
       <h3 class="kb-title" data-i18n="kb_target_title">目标参考系</h3>
-      <p class="kb-text" data-i18n="kb_target_desc">
-        这是你试图将生物钟“平移”到的新时空坐标。
-        <br><br>
-        系统将计算你的生物时间 (Internal Time) 与该地理时间 (External Time) 之间的偏移量。请务必选择目的地的标准时间，而非中转地时间。
-      </p>
+      <p class="kb-text" data-i18n="kb_target_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
@@ -589,13 +612,7 @@
     <div id="info-dir" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_04">VECTOR CONTROL</h2>
       <h3 class="kb-title" data-i18n="kb_dir_title">相位动力学</h3>
-      <p class="kb-text" data-i18n="kb_dir_desc">
-        人类的内源性节律周期平均约为 24.2 小时。这意味着“向后推迟 (Delay)”（如熬夜）顺应了生物惯性，在此方向上的调整阻力较小，生理代价较低。
-        <br><br>
-        相反，“向前提前 (Advance)”（如早起）需要压缩生物节律，是一个逆熵过程，难度较大。
-        <br><br>
-        <strong>智能判断</strong>模块通过计算两种路径的生理代价函数，自动为你选择能耗最低的方案。例如，虽然早睡 4 小时理论上更近，但身体可能无法执行，系统可能会建议通过熬夜 20 小时来达成同相同步。
-      </p>
+      <p class="kb-text" data-i18n="kb_dir_desc">...</p>
       <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
@@ -603,28 +620,14 @@
     <div id="info-algo" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_05">COMPUTE KERNEL</h2>
       <h3 class="kb-title" data-i18n="kb_algo_title">算法模型架构</h3>
-
-      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_sci_title">⚡️ 智能科学 (推荐)</h4>
-      <p class="kb-text" data-i18n="kb_algo_sci_desc">
-        非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。
-        <br>
-        逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75%
-        的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。
-      </p>
-
+      <h4 class="text-yellow-cyber font-bold text-sm mt-6 mb-2" data-i18n="strat_bio_title">⚡️🧪 新智能模式(Beta)</h4>
+      <p class="kb-text" data-i18n="kb_algo_bio_desc">...</p>
+      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_sci_title">⚡️ 智能科学</h4>
+      <p class="kb-text" data-i18n="kb_algo_sci_desc">...</p>
       <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_even_title">⚖️ 线性均分</h4>
-      <p class="kb-text" data-i18n="kb_algo_even_desc">
-        算术平均分布。将总时差绝对值平均切割。
-        <br>
-        这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。
-      </p>
-
+      <p class="kb-text" data-i18n="kb_algo_even_desc">...</p>
       <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_fold_title">🧬 快速折中</h4>
-      <p class="kb-text" data-i18n="kb_algo_fold_desc">
-        渐进收敛模型。基于半衰期原理。
-        <br>
-        每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。
-      </p>
+      <p class="kb-text" data-i18n="kb_algo_fold_desc">...</p>
       <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
@@ -658,18 +661,22 @@
         dir_late: "强制熬夜",
         dir_late_desc: "强迫时钟后移，仅推荐提前睡觉睡不着的。",
 
-        strat_sci_title: "⚡️ 智能科学 (推荐)",
-        strat_sci_desc: "模拟生理光照响应曲线 (PRC)，采用指数级非线性步进。利用前期的睡眠剥夺积累睡眠压力，在最后一日强制完成生物钟锚定。",
+        strat_bio_title: "⚡️🧪 新智能模式(Beta)",
+        strat_bio_desc: "不强制8小时睡眠。根据时差方向动态压缩或延长睡眠时间 (6-10h)，利用睡眠压力进行相位重塑。",
+        strat_sci_title: "⚡️ 智能科学",
+        strat_sci_desc: "模拟生理光照响应曲线 (PRC)。非线性步进。",
         strat_even_title: "⚖️ 线性均分",
         strat_even_desc: "传统稳健。将时差平均分配到每一天。",
         strat_fold_title: "🧬 快速折中",
         strat_fold_desc: "高效收敛。每日消除 50%。最后一天强制熔断。",
 
         duration: "周期/天数:",
+        label_days: "Days",
         view_zone: "显示时区:",
         label_sleep: "入睡 (Sleep)",
         label_wake: "唤醒 (Wake)",
 
+        desc_bio: "生物自适应：动态睡眠长度",
         desc_sci: "相位压缩：高强度非线性步进",
         desc_sci_final: "✅ 强制闭环：光照锚定完成",
         desc_even: "线性均分：每日调整",
@@ -685,12 +692,12 @@
 
         // KB
         kb_id_01: "DATA ANCHOR 01",
-        kb_sleep_title: "生理锚点：生物钟基线",
-        kb_sleep_desc: "算法计算需要基于你身体当前的真实相位。请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。<br><br>严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。<br>必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。",
+        kb_sleep_title: "锚点一：入睡时间",
+        kb_sleep_desc: "很简单，就是你上一次<strong>真的睡着</strong>的时间。不要填航班起飞时间，也不要填你“打算”去睡的时间。填你身体实际“关机”的那个点。",
 
         kb_id_02: "DATA ANCHOR 02",
-        kb_wake_title: "光照重置：皮质醇唤醒",
-        kb_wake_desc: "唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。<br><br>该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。",
+        kb_wake_title: "锚点二：起床时间",
+        kb_wake_desc: "很简单，就是你上一次<strong>睡醒睁眼</strong>的时间。不管是在飞机上还是在家里，填你身体觉得“天亮了”的那个时间。",
 
         kb_id_03: "TARGET FRAME",
         kb_target_title: "目标参考系",
@@ -702,6 +709,7 @@
 
         kb_id_05: "COMPUTE KERNEL",
         kb_algo_title: "算法模型架构",
+        kb_algo_bio_desc: "这是本版本引入的最强算法。它摒弃了“每天睡8小时”的僵化逻辑。<br><strong>向东飞/早起 (Advance)</strong>：算法会主动压缩睡眠时间（如首日仅6小时），通过制造“睡眠压力”来强迫身体在次日更早入睡。<br><strong>向西飞/熬夜 (Delay)</strong>：算法会允许更长的恢复性睡眠（9-10小时），利用自然避光推迟醒来时间。",
         kb_algo_sci_desc: "非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。<br>逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75% 的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。",
         kb_algo_even_desc: "算术平均分布。将总时差绝对值平均切割。<br>这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。",
         kb_algo_fold_desc: "渐进收敛模型。基于半衰期原理。<br>每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。"
@@ -728,18 +736,22 @@
         dir_late: "Force Late",
         dir_late_desc: "Forces clock delay. Only recommended if unable to sleep early.",
 
-        strat_sci_title: "⚡️ Smart Science (Rec)",
-        strat_sci_desc: "Simulates Physiological Phase Response Curve (PRC) using exponential non-linear stepping. Utilizes sleep deprivation pressure from early stages to force a circadian anchor on the final day.",
+        strat_bio_title: "⚡️🧪 Smart New(Beta)",
+        strat_bio_desc: "Variable sleep duration (6-10h). Compresses sleep to advance phase, extends sleep to delay phase.",
+        strat_sci_title: "⚡️ Smart Science",
+        strat_sci_desc: "Simulates Physiological PRC. Non-linear stepping.",
         strat_even_title: "⚖️ Linear Even",
         strat_even_desc: "Conservative. Distributes offset evenly.",
         strat_fold_title: "🧬 Rapid Fold",
         strat_fold_desc: "Efficient convergence (50%/day). Force snap.",
 
         duration: "Duration:",
+        label_days: "Days",
         view_zone: "View:",
         label_sleep: "Sleep At",
         label_wake: "Wake At",
 
+        desc_bio: "Bio-Adaptive: Dynamic Sleep Duration",
         desc_sci: "Phase Compression: High-intensity shift",
         desc_sci_final: "✅ Locked: Circadian Anchor Set",
         desc_even: "Linear Even: Daily shift",
@@ -753,42 +765,39 @@
         badge_force_early: "MODE: FORCE EARLY",
         badge_force_late: "MODE: FORCE LATE",
 
-        // KB - English Translation
         kb_id_01: "DATA ANCHOR 01",
         kb_sleep_title: "Biological Anchor: Baseline Onset",
-        kb_sleep_desc: "Calculation relies on your current <strong>biological phase</strong>. Please input your <strong>actual last sleep time</strong> (when your central nervous system shut down).<br><br>Do not input: Flight takeoff time or planned bedtime.<br>Must input: The time you actually fell asleep. This is the physical baseline for melatonin onset calculation.",
+        kb_sleep_desc: "Calculation relies on your current <strong>biological phase</strong>. Please input your <strong>actual last sleep time</strong>.<br><br>Do not input: Flight takeoff time or planned bedtime.<br>Must input: The time you actually fell asleep. This is the physical baseline for melatonin onset calculation.",
 
         kb_id_02: "DATA ANCHOR 02",
         kb_wake_title: "Photic Reset: Cortisol Awakening",
-        kb_wake_desc: "Wake time marks the moment the Suprachiasmatic Nucleus (SCN) receives the first light signal, triggering the cortisol pulse.<br><br>This defines your current \"subjective day\" length. The algorithm calculates the Phase Difference (Δt) between your internal rhythm and the target zone based on this. Accuracy here determines efficiency.",
+        kb_wake_desc: "Wake time marks the moment the SCN receives the first light signal.<br><br>This defines your current \"subjective day\" length. The algorithm calculates the Phase Difference (Δt) based on this.",
 
         kb_id_03: "TARGET FRAME",
         kb_target_title: "Reference Frame",
-        kb_target_desc: "This is the new spatio-temporal coordinate you are trying to \"shift\" your body into.<br><br>The system calculates the offset between your Internal Time and this External Time. Please select the standard time of your destination, not layover times.",
+        kb_target_desc: "This is the new spatio-temporal coordinate you are trying to \"shift\" your body into.<br><br>Please select the standard time of your destination, not layover times.",
 
         kb_id_04: "VECTOR CONTROL",
         kb_dir_title: "Phase Dynamics",
-        kb_dir_desc: "The human intrinsic circadian period averages ~24.2 hours. Thus, \"Delaying\" (staying up late/flying West) aligns with biological inertia and causes less physiological stress.<br><br>Conversely, \"Advancing\" (waking early/flying East) requires compressing the rhythm, which is an anti-entropic process and much harder.<br><br><strong>Smart Auto</strong> calculates the physiological cost function for both paths and selects the lowest-energy solution. e.g., instead of advancing 4 hours (hard), it might suggest delaying 20 hours (easier).",
+        kb_dir_desc: "The human intrinsic circadian period averages ~24.2 hours. Thus, \"Delaying\" (staying up) is easier.<br>\"Advancing\" (waking early) is harder.<br><br><strong>Smart Auto</strong> calculates physiological cost and selects the path of least resistance.",
 
         kb_id_05: "COMPUTE KERNEL",
         kb_algo_title: "Algorithm Architecture",
-        kb_algo_sci_desc: "Non-linear phase compression. Simulates Phase Response Curve (PRC).<br>Logic: Uses sleep pressure in first 2/3 of cycle to force 75% shift, then anchors on final day. Most efficient.",
-        kb_algo_even_desc: "Arithmetic mean distribution. Splits Δt evenly over N days.<br>Predictable but inefficient for large gaps.",
-        kb_algo_fold_desc: "Half-life convergence. Eliminates 50% of remaining offset daily.<br>Fast start, exponential decay. Includes a \"hard snap\" at the end."
+        kb_algo_bio_desc: "The most advanced algorithm in this version. Discourages rigid 8h sleep.<br><strong>Advance:</strong> Compresses sleep (e.g. 6h) to build sleep pressure.<br><strong>Delay:</strong> Allows extended sleep (9-10h) to naturally drift later.",
+        kb_algo_sci_desc: "Non-linear phase compression. Simulates Phase Response Curve (PRC).",
+        kb_algo_even_desc: "Arithmetic mean distribution. Splits Δt evenly over N days.",
+        kb_algo_fold_desc: "Half-life convergence. Eliminates 50% of remaining offset daily."
       }
     };
 
     let currentLang = 'zh';
     let globalPlan = [];
 
-    // --- WIZARD LOGIC ---
     function goToView(targetId) {
-      // If targetId is number, convert to ID string (legacy support for buttons)
       if (typeof targetId === 'number') {
         if (targetId === 0) targetId = 'view-welcome';
         else if (targetId === 1) targetId = 'view-inputs';
         else if (targetId === 2) {
-          // Validation
           const s = getSplitDateTime('sleep');
           const w = getSplitDateTime('wake');
           if (!s || !w || !s.isValid || !w.isValid) {
@@ -813,7 +822,6 @@
       window.scrollTo(0, 0);
     }
 
-    // --- EXECUTE & RENDER ---
     function executeAndShow() {
       try {
         execute();
@@ -827,13 +835,15 @@
       }
     }
 
-    // --- UI UTILS ---
     function initSplitInputs() {
       const now = DateTime.now();
       const sleepInit = now.minus({ hours: 8 });
       const wakeInit = now;
 
-      document.getElementById('sleepDate').value = sleepInit.toFormat('yyyy-MM-dd');
+      // Sleep
+      document.getElementById('sleepYear').value = sleepInit.year;
+      document.getElementById('sleepMonth').value = sleepInit.month;
+      document.getElementById('sleepDay').value = sleepInit.day;
       let sH = sleepInit.hour;
       let sIsPM = sH >= 12;
       if (sH === 0) sH = 12; else if (sH > 12) sH -= 12;
@@ -841,7 +851,10 @@
       document.getElementById('sleepMM').value = sleepInit.minute;
       setAMPM('sleepAMPM', sIsPM);
 
-      document.getElementById('wakeDate').value = wakeInit.toFormat('yyyy-MM-dd');
+      // Wake
+      document.getElementById('wakeYear').value = wakeInit.year;
+      document.getElementById('wakeMonth').value = wakeInit.month;
+      document.getElementById('wakeDay').value = wakeInit.day;
       let wH = wakeInit.hour;
       let wIsPM = wH >= 12;
       if (wH === 0) wH = 12; else if (wH > 12) wH -= 12;
@@ -870,21 +883,24 @@
     }
 
     function getSplitDateTime(prefix) {
-      const dateStr = document.getElementById(prefix + 'Date').value;
+      const y = document.getElementById(prefix + 'Year').value;
+      const m = document.getElementById(prefix + 'Month').value.padStart(2, '0');
+      const d = document.getElementById(prefix + 'Day').value.padStart(2, '0');
+
       let hh = parseInt(document.getElementById(prefix + 'HH').value);
       const mm = parseInt(document.getElementById(prefix + 'MM').value);
       const isPM = document.getElementById(prefix + 'AMPM').innerText === 'PM';
       const zone = document.getElementById(prefix + 'Zone').value;
 
-      if (!dateStr || isNaN(hh) || isNaN(mm)) return null;
+      if (!y || !m || !d || isNaN(hh) || isNaN(mm)) return null;
       if (isPM && hh < 12) hh += 12;
       if (!isPM && hh === 12) hh = 0;
 
+      const dateStr = `${y}-${m}-${d}`;
       const timeStr = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
       return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
     }
 
-    // --- INIT & I18N ---
     function toggleLanguage() {
       currentLang = currentLang === 'zh' ? 'en' : 'zh';
       applyLanguage();
@@ -902,20 +918,14 @@
       if (document.getElementById('view-results').classList.contains('active')) renderTimeline();
     }
 
-    // --- TIMEZONE CONFIG ---
     const rawTimezones = [
-      // Asia
       "Asia/Shanghai", "Asia/Tokyo", "Asia/Singapore", "Asia/Kuala_Lumpur", "Asia/Bangkok",
       "Asia/Dubai", "Asia/Seoul", "Asia/Kolkata", "Asia/Hong_Kong", "Asia/Mumbai",
-      // Oceania
       "Australia/Melbourne", "Australia/Sydney", "Australia/Brisbane", "Australia/Adelaide", "Australia/Perth", "Pacific/Auckland",
-      // Europe
       "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome", "Europe/Amsterdam",
       "Europe/Moscow", "Europe/Istanbul", "Europe/Zurich", "Europe/Madrid",
-      // Americas
       "America/New_York", "America/Los_Angeles", "America/Toronto", "America/Vancouver",
       "America/Mexico_City", "America/Sao_Paulo",
-      // Africa
       "Africa/Johannesburg"
     ];
 
@@ -937,12 +947,8 @@
         const disp = formatZoneDisplay(tz);
         el.add(new Option(disp, tz));
       });
-
       const userZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (!rawTimezones.includes(userZone)) {
-        el.add(new Option(userZone, userZone));
-      }
-
+      if (!rawTimezones.includes(userZone)) el.add(new Option(userZone, userZone));
       el.value = def || userZone;
     };
 
@@ -957,8 +963,6 @@
     if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
     applyLanguage();
 
-
-    // --- LOGIC ---
     function execute() {
       const t = translations[currentLang];
       const lastSleep = getSplitDateTime('sleep');
@@ -1008,53 +1012,63 @@
       badge.dataset.key = badgeKey;
 
       let durationDays = 3;
-      if (strategy === 'scientific') durationDays = parseInt(document.getElementById('days_sci').value);
+      if (strategy === 'bio_adaptive') durationDays = parseInt(document.getElementById('days_bio').value);
+      else if (strategy === 'scientific') durationDays = parseInt(document.getElementById('days_sci').value);
       else if (strategy === 'smart_even') durationDays = parseInt(document.getElementById('days_even').value);
       else if (strategy === 'smart_fold') durationDays = parseInt(document.getElementById('days_fold').value);
 
       globalPlan = [];
 
-      if (strategy === 'scientific') {
+      if (strategy === 'bio_adaptive') {
+        for (let i = 1; i <= durationDays; i++) {
+          let sleepDur = 8;
+          let shiftRatio = 0;
+          if (finalMode === 'ADVANCE') {
+            if (i === 1) sleepDur = 6.0;
+            else if (i === 2) sleepDur = 7.0;
+            else sleepDur = 7.5 + (i * 0.1);
+            if (sleepDur > 8) sleepDur = 8;
+            shiftRatio = Math.pow(i / durationDays, 0.6);
+          } else {
+            if (i === 1) sleepDur = 9.5;
+            else if (i === 2) sleepDur = 9.0;
+            else sleepDur = 8.5;
+            shiftRatio = (i / durationDays);
+          }
+          let currentShift = finalDiff * shiftRatio;
+          let dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
+          let daySleep = dayWake.minus({ hours: sleepDur });
+          globalPlan.push({ i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake, shift: currentShift, type: 'bio', isFinal: i === durationDays, dur: sleepDur });
+        }
+      }
+      else if (strategy === 'scientific') {
         for (let i = 1; i <= durationDays; i++) {
           let ratio = Math.pow(i / durationDays, 0.7);
           let shiftAmount = finalDiff * ratio;
           let dayWake = wakeInTarget.plus({ hours: (24 * i) + shiftAmount });
           let daySleep = dayWake.minus({ hours: 8 });
           let currentShift = finalDiff * (ratio - Math.pow((i - 1) / durationDays, 0.7));
-
-          globalPlan.push({
-            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
-            shift: currentShift, type: 'sci', isFinal: i === durationDays
-          });
+          globalPlan.push({ i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake, shift: currentShift, type: 'sci', isFinal: i === durationDays });
         }
       } else if (strategy === 'smart_even') {
         const step = finalDiff / durationDays;
         for (let i = 1; i <= durationDays; i++) {
           let dayWake = wakeInTarget.plus({ hours: 24 * i + (step * i) });
           let daySleep = dayWake.minus({ hours: 8 });
-          globalPlan.push({
-            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
-            shift: step, type: 'even', isFinal: false
-          });
+          globalPlan.push({ i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake, shift: step, type: 'even', isFinal: false });
         }
       } else if (strategy === 'smart_fold') {
         for (let i = 1; i <= durationDays; i++) {
           let remainingRatio = Math.pow(0.5, i);
           let completedRatio = 1 - remainingRatio;
           if (i === durationDays) completedRatio = 1.0;
-
           let totalShiftSoFar = finalDiff * completedRatio;
           let dayWake = wakeInTarget.plus({ hours: (24 * i) + totalShiftSoFar });
           let daySleep = dayWake.minus({ hours: 8 });
-
           let sleepHour = daySleep.hour;
           let success = (sleepHour >= 20 && sleepHour < 23);
           let moveAmount = Math.abs(totalShiftSoFar - (finalDiff * (1 - Math.pow(0.5, i - 1))));
-
-          globalPlan.push({
-            i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake,
-            shift: moveAmount, type: 'fold', success: success, isFinal: i === durationDays
-          });
+          globalPlan.push({ i: i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake, shift: moveAmount, type: 'fold', success: success, isFinal: i === durationDays });
           if (success) break;
         }
       }
@@ -1067,7 +1081,6 @@
       const t = translations[currentLang];
       const container = document.getElementById('timeline');
       container.innerHTML = "";
-
       const displayZone = document.getElementById('displayZoneSelect').value;
       const badge = document.getElementById('directionBadge');
       if (badge.dataset.key) badge.innerText = t[badge.dataset.key];
@@ -1075,9 +1088,9 @@
       globalPlan.forEach(item => {
         const dispSleep = item.sleepTime.setZone(displayZone);
         const dispWake = item.wakeTime.setZone(displayZone);
-
         let desc = "";
-        if (item.type === 'sci') desc = item.isFinal ? t.desc_sci_final : `${t.desc_sci} ${Math.abs(item.shift).toFixed(1)}h`;
+        if (item.type === 'bio') desc = `${t.desc_bio} (${item.dur}h)`;
+        else if (item.type === 'sci') desc = item.isFinal ? t.desc_sci_final : `${t.desc_sci} ${Math.abs(item.shift).toFixed(1)}h`;
         else if (item.type === 'even') desc = `${t.desc_even} ${Math.abs(item.shift).toFixed(1)}h`;
         else if (item.type === 'fold') {
           if (item.isFinal) desc = t.desc_fold_force;
@@ -1087,7 +1100,6 @@
 
         const row = document.createElement('div');
         row.className = "hard-card p-6";
-        // Grid 2-col layout (Left Blue, Right Orange)
         row.innerHTML = `
                     <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
                         <span class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1">${t.day_prefix} ${item.i}/${item.totalDays}</span>
