@@ -185,6 +185,29 @@
       border-color: #10b981;
     }
 
+    /* Native Date Styling fix for Dark Mode */
+    input[type="date"] {
+      flex: 2;
+      text-transform: uppercase;
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 12px;
+      font-family: inherit;
+      /* Invert calendar icon to white */
+      color-scheme: dark;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+
     /* Remove spinners */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
@@ -364,11 +387,7 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="number" id="sleepYear" placeholder="YYYY" class="custom-input w-24">
-              <span class="colon text-slate-600">/</span>
-              <input type="number" id="sleepMonth" placeholder="MM" class="custom-input flex-1">
-              <span class="colon text-slate-600">/</span>
-              <input type="number" id="sleepDay" placeholder="DD" class="custom-input flex-1">
+              <input type="date" id="sleepDate" class="w-full">
             </div>
             <div class="input-row">
               <input type="number" id="sleepHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
@@ -390,11 +409,7 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="number" id="wakeYear" placeholder="YYYY" class="custom-input w-24">
-              <span class="colon text-slate-600">/</span>
-              <input type="number" id="wakeMonth" placeholder="MM" class="custom-input flex-1">
-              <span class="colon text-slate-600">/</span>
-              <input type="number" id="wakeDay" placeholder="DD" class="custom-input flex-1">
+              <input type="date" id="wakeDate" class="w-full">
             </div>
             <div class="input-row">
               <input type="number" id="wakeHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
@@ -587,7 +602,7 @@
 
     <div id="info-sleep" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_01">DATA ANCHOR 01</h2>
-      <h3 class="kb-title" data-i18n="kb_sleep_title">锚点一：入睡时间</h3>
+      <h3 class="kb-title" data-i18n="kb_sleep_title">生理锚点：生物钟基线</h3>
       <p class="kb-text" data-i18n="kb_sleep_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
@@ -595,7 +610,7 @@
 
     <div id="info-wake" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_02">DATA ANCHOR 02</h2>
-      <h3 class="kb-title" data-i18n="kb_wake_title">锚点二：起床时间</h3>
+      <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：皮质醇唤醒</h3>
       <p class="kb-text" data-i18n="kb_wake_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
@@ -692,12 +707,12 @@
 
         // KB
         kb_id_01: "DATA ANCHOR 01",
-        kb_sleep_title: "锚点一：入睡时间",
-        kb_sleep_desc: "很简单，就是你上一次<strong>真的睡着</strong>的时间。不要填航班起飞时间，也不要填你“打算”去睡的时间。填你身体实际“关机”的那个点。",
+        kb_sleep_title: "生理锚点：生物钟基线",
+        kb_sleep_desc: "算法计算需要基于你身体当前的真实相位。请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。<br><br>严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。<br>必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。",
 
         kb_id_02: "DATA ANCHOR 02",
-        kb_wake_title: "锚点二：起床时间",
-        kb_wake_desc: "很简单，就是你上一次<strong>睡醒睁眼</strong>的时间。不管是在飞机上还是在家里，填你身体觉得“天亮了”的那个时间。",
+        kb_wake_title: "光照重置：皮质醇唤醒",
+        kb_wake_desc: "唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。<br><br>该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。",
 
         kb_id_03: "TARGET FRAME",
         kb_target_title: "目标参考系",
@@ -765,6 +780,7 @@
         badge_force_early: "MODE: FORCE EARLY",
         badge_force_late: "MODE: FORCE LATE",
 
+        // KB - English Translation
         kb_id_01: "DATA ANCHOR 01",
         kb_sleep_title: "Biological Anchor: Baseline Onset",
         kb_sleep_desc: "Calculation relies on your current <strong>biological phase</strong>. Please input your <strong>actual last sleep time</strong>.<br><br>Do not input: Flight takeoff time or planned bedtime.<br>Must input: The time you actually fell asleep. This is the physical baseline for melatonin onset calculation.",
@@ -793,18 +809,27 @@
     let currentLang = 'zh';
     let globalPlan = [];
 
+    // --- WIZARD LOGIC ---
     function goToView(targetId) {
+      // Number to ID mapping
       if (typeof targetId === 'number') {
         if (targetId === 0) targetId = 'view-welcome';
         else if (targetId === 1) targetId = 'view-inputs';
         else if (targetId === 2) {
-          const s = getSplitDateTime('sleep');
-          const w = getSplitDateTime('wake');
-          if (!s || !w || !s.isValid || !w.isValid) {
+          // Manual validation since we reverted to native input
+          const sDate = document.getElementById('sleepDate').value;
+          const wDate = document.getElementById('wakeDate').value;
+
+          // Simple check if date is filled
+          if (!sDate || !wDate) {
             alert("INVALID TIME DATA. CHECK INPUTS.");
             document.getElementById('view-inputs').classList.add('active');
             return;
           }
+
+          // Logic check
+          const s = getSplitDateTime('sleep');
+          const w = getSplitDateTime('wake');
           if (w <= s) {
             alert("TEMPORAL PARADOX: Wake time must be after Sleep time.");
             document.getElementById('view-inputs').classList.add('active');
@@ -835,15 +860,14 @@
       }
     }
 
+    // --- UI UTILS ---
     function initSplitInputs() {
       const now = DateTime.now();
       const sleepInit = now.minus({ hours: 8 });
       const wakeInit = now;
 
-      // Sleep
-      document.getElementById('sleepYear').value = sleepInit.year;
-      document.getElementById('sleepMonth').value = sleepInit.month;
-      document.getElementById('sleepDay').value = sleepInit.day;
+      // Reverted to standard value setting for native inputs
+      document.getElementById('sleepDate').value = sleepInit.toFormat('yyyy-MM-dd');
       let sH = sleepInit.hour;
       let sIsPM = sH >= 12;
       if (sH === 0) sH = 12; else if (sH > 12) sH -= 12;
@@ -851,10 +875,7 @@
       document.getElementById('sleepMM').value = sleepInit.minute;
       setAMPM('sleepAMPM', sIsPM);
 
-      // Wake
-      document.getElementById('wakeYear').value = wakeInit.year;
-      document.getElementById('wakeMonth').value = wakeInit.month;
-      document.getElementById('wakeDay').value = wakeInit.day;
+      document.getElementById('wakeDate').value = wakeInit.toFormat('yyyy-MM-dd');
       let wH = wakeInit.hour;
       let wIsPM = wH >= 12;
       if (wH === 0) wH = 12; else if (wH > 12) wH -= 12;
@@ -882,21 +903,19 @@
       }
     }
 
+    // Updated helper for native date input
     function getSplitDateTime(prefix) {
-      const y = document.getElementById(prefix + 'Year').value;
-      const m = document.getElementById(prefix + 'Month').value.padStart(2, '0');
-      const d = document.getElementById(prefix + 'Day').value.padStart(2, '0');
+      const dateStr = document.getElementById(prefix + 'Date').value; // YYYY-MM-DD
 
       let hh = parseInt(document.getElementById(prefix + 'HH').value);
       const mm = parseInt(document.getElementById(prefix + 'MM').value);
       const isPM = document.getElementById(prefix + 'AMPM').innerText === 'PM';
       const zone = document.getElementById(prefix + 'Zone').value;
 
-      if (!y || !m || !d || isNaN(hh) || isNaN(mm)) return null;
+      if (!dateStr || isNaN(hh) || isNaN(mm)) return null;
       if (isPM && hh < 12) hh += 12;
       if (!isPM && hh === 12) hh = 0;
 
-      const dateStr = `${y}-${m}-${d}`;
       const timeStr = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
       return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
     }
