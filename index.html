@@ -3,24 +3,123 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V10.9.2b by Louie Tang</title>
-  <link rel="stylesheet" href="lib/fonts.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JETLAG COMMANDER // V10.9.4-OS-Fix</title>
+  <script src="lib/tailwindcss.js"></script>
+  <script src="lib/luxon.min.js"></script>
   <style>
     /* -----------------------
-       CORE STYLES
+       FONT DECLARATION
        ----------------------- */
-    body {
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
-      background-color: #020617;
-      color: #e2e8f0;
-      overflow-x: hidden;
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('lib/JetBrainsMono-Bold.woff2') format('woff2');
+      font-weight: bold;
+      font-style: normal;
     }
 
     /* -----------------------
-       WIZARD TRANSITION
+       CORE & RESET
+       ----------------------- */
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #020617;
+      color: #e2e8f0;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    input,
+    select,
+    button {
+      outline: none;
+    }
+
+    /* -----------------------
+       PLATFORM SPECIFIC INPUT STYLES
+       ----------------------- */
+
+    /* 通用容器 */
+    .input-stack {
+      position: relative;
+      flex: 1;
+      height: 50px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .input-stack:hover {
+      border-color: #475569;
+    }
+
+    .input-stack:active {
+      border-color: #10b981;
+    }
+
+    /* 显示层 (文字) */
+    .display-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f8fafc;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 1rem;
+      pointer-events: none;
+      /* 让点击穿透 */
+      z-index: 1;
+    }
+
+    /* === 核心：根据 JS 注入的 class 区分样式 === */
+
+    /* SCENARIO A: 移动端 (Mobile) 
+       逻辑：Input 必须全屏覆盖，在最上层，直接接收触摸。
+    */
+    body.platform-mobile .hybrid-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      /* 透明 */
+      z-index: 10;
+      /* 最顶层 */
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    /* SCENARIO B: 桌面端 (Desktop)
+       逻辑：Input 必须存在且有位置(解决Chrome左上角问题)，但不能挡住点击。
+       我们把它放在中间，大小为 0 或 1px，让 JS 的 showPicker 在此处弹出。
+    */
+    body.platform-desktop .hybrid-input {
+      position: absolute;
+      /* 放在容器正中心，修正 Chrome 弹窗锚点 */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 1px;
+      /* 必须有尺寸，否则部分浏览器认为不可见 */
+      opacity: 0;
+      z-index: -1;
+      /* 藏在下面，让 div 接收点击 */
+      pointer-events: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* -----------------------
+       LAYOUT & UI
        ----------------------- */
     .view-section {
       display: none;
@@ -33,9 +132,6 @@
       opacity: 1;
     }
 
-    /* -----------------------
-       INPUT LAYOUT (MODIFIED)
-       ----------------------- */
     .split-input-container {
       display: flex;
       flex-direction: column;
@@ -43,7 +139,7 @@
       background: #020617;
       border: 1px solid #334155;
       padding: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     .row-main {
@@ -56,66 +152,30 @@
       width: 100%;
     }
 
-    /* 隐藏真实的 input，但保留功能 */
-    .real-input-hidden {
-      position: absolute;
-      width: 0;
-      height: 0;
-      opacity: 0;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    /* 可见的显示框 */
-    .custom-input {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #f8fafc;
-      padding: 12px 0;
-      font-family: inherit;
-      font-size: 1rem;
-      text-align: center;
-      border-radius: 0;
-      outline: none;
-      cursor: pointer;
-      text-transform: uppercase;
-      font-weight: bold;
-      width: 100%;
-      height: 100%;
-      transition: border-color 0.2s;
-    }
-
-    .custom-input:focus,
-    .custom-input:hover {
-      border-color: #10b981;
-    }
-
     .zone-select {
       width: 100%;
+      height: 40px;
       background: #0f172a;
       border: 1px solid #334155;
       color: #94a3b8;
       font-size: 0.8rem;
-      padding: 12px;
+      padding: 0 12px;
       text-align: center;
-      outline: none;
+      border-radius: 0;
     }
 
-    /* -----------------------
-       AM/PM TOGGLE
-       ----------------------- */
     .ampm-toggle {
       background: #0f172a;
       border: 1px solid #334155;
       color: #64748b;
       cursor: pointer;
       font-weight: bold;
-      padding: 0 12px;
+      width: 60px;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 60px;
+      flex: none;
     }
 
     .ampm-toggle.am-active {
@@ -132,9 +192,7 @@
       box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
     }
 
-    /* -----------------------
-       CARDS & BUTTONS
-       ----------------------- */
+    /* CARD STYLES */
     .radio-hidden {
       position: absolute;
       opacity: 0;
@@ -151,7 +209,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.2s;
       position: relative;
       min-height: 200px;
     }
@@ -190,9 +248,7 @@
       padding: 1rem;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
       width: 100%;
-      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -203,11 +259,6 @@
       background-color: #1e3a8a;
       border-color: #60a5fa;
       color: white;
-    }
-
-    .dir-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
     }
 
     .days-input {
@@ -230,7 +281,6 @@
       justify-content: space-between;
     }
 
-    /* ACTION BUTTON */
     .action-btn {
       width: 100%;
       background-color: #059669;
@@ -252,7 +302,6 @@
       transform: scale(0.98);
     }
 
-    /* INFO TRIGGER */
     .info-trigger {
       font-size: 0.7rem;
       color: #475569;
@@ -262,21 +311,11 @@
       border: 1px solid #334155;
       padding: 2px 6px;
       border-radius: 4px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: inline-block;
     }
 
-    .info-trigger:hover {
-      color: #10b981;
-      border-color: #10b981;
-    }
-
-    /* RESULT STYLES */
     .hard-card {
       background-color: #0f172a;
       border: 1px solid #334155;
-      border-radius: 0;
     }
 
     .sleep-border {
@@ -293,24 +332,19 @@
       border: 1px solid #334155;
       font-size: 0.75rem;
       padding: 4px 8px;
-      outline: none;
-      cursor: pointer;
     }
 
     .text-yellow-cyber {
       color: #fbbf24;
     }
 
-    /* KB STYLES */
     .kb-header {
       color: #10b981;
       font-weight: bold;
       font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
       border-bottom: 1px solid #334155;
       padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
     }
 
     .kb-title {
@@ -335,7 +369,7 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.2b by Louie Tang</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.4</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -362,6 +396,7 @@
       </h3>
 
       <div class="space-y-8">
+
         <div class="space-y-2">
           <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
             <span data-i18n="step1">Step 1: 上一次入睡时间</span>
@@ -369,20 +404,22 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="row-main">
-              <div class="relative flex-1">
-                <input type="text" id="sleepDateDisplay" class="custom-input" readonly
-                  onclick="document.getElementById('sleepDate').showPicker()">
-                <input type="date" id="sleepDate" class="real-input-hidden"
-                  onchange="updateDateDisplay(this, 'sleepDateDisplay')">
+              <div class="input-stack" onclick="handleDesktopClick('sleepDate')">
+                <span id="sleepDateDisplay" class="display-layer">-- MMM</span>
+                <input type="date" id="sleepDate" class="hybrid-input"
+                  oninput="updateDateDisplay(this, 'sleepDateDisplay')">
               </div>
-              <div class="relative flex-1">
-                <input type="text" id="sleepTimeDisplay" class="custom-input" readonly
-                  onclick="document.getElementById('sleepTime').showPicker()">
-                <input type="time" id="sleepTime" class="real-input-hidden"
+
+              <div class="input-stack" onclick="handleDesktopClick('sleepTime')">
+                <span id="sleepTimeDisplay" class="display-layer">--:--</span>
+                <input type="time" id="sleepTime" class="hybrid-input"
+                  oninput="updateTimeDisplay(this, 'sleepTimeDisplay'); syncAMPM('sleepTime', 'sleepAMPM')"
                   onchange="updateTimeDisplay(this, 'sleepTimeDisplay'); syncAMPM('sleepTime', 'sleepAMPM')">
               </div>
-              <button id="sleepAMPM" class="ampm-toggle flex-none" onclick="toggleAMPM('sleepAMPM')">AM</button>
+
+              <button id="sleepAMPM" class="ampm-toggle" onclick="toggleAMPM('sleepAMPM')">AM</button>
             </div>
+
             <div class="row-zone">
               <select id="sleepZone" class="zone-select"></select>
             </div>
@@ -396,20 +433,22 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="row-main">
-              <div class="relative flex-1">
-                <input type="text" id="wakeDateDisplay" class="custom-input" readonly
-                  onclick="document.getElementById('wakeDate').showPicker()">
-                <input type="date" id="wakeDate" class="real-input-hidden"
-                  onchange="updateDateDisplay(this, 'wakeDateDisplay')">
+              <div class="input-stack" onclick="handleDesktopClick('wakeDate')">
+                <span id="wakeDateDisplay" class="display-layer">-- MMM</span>
+                <input type="date" id="wakeDate" class="hybrid-input"
+                  oninput="updateDateDisplay(this, 'wakeDateDisplay')">
               </div>
-              <div class="relative flex-1">
-                <input type="text" id="wakeTimeDisplay" class="custom-input" readonly
-                  onclick="document.getElementById('wakeTime').showPicker()">
-                <input type="time" id="wakeTime" class="real-input-hidden"
+
+              <div class="input-stack" onclick="handleDesktopClick('wakeTime')">
+                <span id="wakeTimeDisplay" class="display-layer">--:--</span>
+                <input type="time" id="wakeTime" class="hybrid-input"
+                  oninput="updateTimeDisplay(this, 'wakeTimeDisplay'); syncAMPM('wakeTime', 'wakeAMPM')"
                   onchange="updateTimeDisplay(this, 'wakeTimeDisplay'); syncAMPM('wakeTime', 'wakeAMPM')">
               </div>
-              <button id="wakeAMPM" class="ampm-toggle flex-none" onclick="toggleAMPM('wakeAMPM')">AM</button>
+
+              <button id="wakeAMPM" class="ampm-toggle" onclick="toggleAMPM('wakeAMPM')">AM</button>
             </div>
+
             <div class="row-zone">
               <select id="wakeZone" class="zone-select"></select>
             </div>
@@ -473,14 +512,13 @@
         </label>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
           <label>
             <input type="radio" name="strategy" value="bio_adaptive" class="radio-hidden" checked>
             <div class="strategy-card">
               <div>
                 <div class="text-yellow-cyber font-bold text-sm" data-i18n="strat_bio_title">⚡️🧪 新智能模式(Beta)</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_bio_desc">
-                  不强制8小时睡眠。根据时差方向动态压缩或延长睡眠时间 (6-10h)，利用睡眠压力进行相位重塑。</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_bio_desc">不强制8小时睡眠。动态压缩或延长睡眠。
+                </div>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
@@ -498,8 +536,8 @@
             <div class="strategy-card">
               <div>
                 <div class="text-red-400 font-bold text-sm" data-i18n="strat_sci_title">⚡️ 智能科学</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_sci_desc">模拟生理光照响应曲线
-                  (PRC)。非线性步进。</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_sci_desc">模拟生理光照响应曲线 (PRC)。
+                </div>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
@@ -517,8 +555,8 @@
             <div class="strategy-card">
               <div>
                 <div class="text-emerald-400 font-bold text-sm" data-i18n="strat_fold_title">🧬 快速折中</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_fold_desc">高效收敛。每日消除
-                  50%。最后一天强制熔断。</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_fold_desc">高效收敛。每日消除 50%。
+                </div>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
@@ -549,7 +587,6 @@
               </div>
             </div>
           </label>
-
         </div>
       </div>
 
@@ -808,8 +845,129 @@
 
     let currentLang = 'zh';
     let globalPlan = [];
+    let isDesktop = false;
 
-    // --- WIZARD LOGIC ---
+    // --- DEVICE DETECTION ---
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      // Simple heuristic: if it says "Mobile" or "Android" or "iPhone", it's mobile.
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      isDesktop = !isMobile;
+
+      if (isMobile) {
+        document.body.classList.add('platform-mobile');
+        document.body.classList.remove('platform-desktop');
+      } else {
+        document.body.classList.add('platform-desktop');
+        document.body.classList.remove('platform-mobile');
+      }
+    }
+
+    // --- DESKTOP CLICK HANDLER ---
+    // In desktop mode, the input is z-index: -1. The div receives the click.
+    // We must manually trigger the picker.
+    function handleDesktopClick(id) {
+      if (!isDesktop) return; // Mobile handles touches natively via CSS z-index
+
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      try {
+        if (typeof el.showPicker === 'function') {
+          el.showPicker();
+        } else {
+          // Fallback for older Safari Desktop or browsers without showPicker
+          el.focus();
+          el.click();
+        }
+      } catch (e) {
+        console.warn("Picker failed:", e);
+        // Desperate fallback
+        el.click();
+      }
+    }
+
+    // --- DISPLAY SYNC LOGIC ---
+    function updateDateDisplay(inputEl, displayId) {
+      const val = inputEl.value; // yyyy-MM-dd
+      if (!val) return;
+      const dt = DateTime.fromISO(val);
+      // Force EN locale to get "FEB", uppercase
+      document.getElementById(displayId).innerText = dt.setLocale('en').toFormat('dd MMM');
+    }
+
+    function updateTimeDisplay(inputEl, displayId) {
+      const val = inputEl.value; // HH:mm
+      if (!val) return;
+      const [h, m] = val.split(':').map(Number);
+      // 12h Format
+      let h12 = h % 12;
+      if (h12 === 0) h12 = 12;
+      const hStr = h12.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, '0');
+      document.getElementById(displayId).innerText = `${hStr}:${mStr}`;
+    }
+
+    function initSplitInputs() {
+      const now = DateTime.now();
+      const sleepInit = now.minus({ hours: 8 });
+      const wakeInit = now;
+
+      const sDate = document.getElementById('sleepDate');
+      const sTime = document.getElementById('sleepTime');
+      sDate.value = sleepInit.toFormat('yyyy-MM-dd');
+      sTime.value = sleepInit.toFormat('HH:mm');
+
+      updateDateDisplay(sDate, 'sleepDateDisplay');
+      updateTimeDisplay(sTime, 'sleepTimeDisplay');
+      syncAMPM('sleepTime', 'sleepAMPM');
+
+      const wDate = document.getElementById('wakeDate');
+      const wTime = document.getElementById('wakeTime');
+      wDate.value = wakeInit.toFormat('yyyy-MM-dd');
+      wTime.value = wakeInit.toFormat('HH:mm');
+
+      updateDateDisplay(wDate, 'wakeDateDisplay');
+      updateTimeDisplay(wTime, 'wakeTimeDisplay');
+      syncAMPM('wakeTime', 'wakeAMPM');
+    }
+
+    function syncAMPM(inputId, btnId) {
+      const val = document.getElementById(inputId).value;
+      if (!val) return;
+      const h = parseInt(val.split(':')[0]);
+      setAMPM(btnId, h >= 12);
+    }
+
+    function toggleAMPM(btnId) {
+      const prefix = btnId.replace('AMPM', '');
+      const input = document.getElementById(prefix + 'Time');
+      if (!input.value) return;
+
+      let [h, m] = input.value.split(':').map(Number);
+      if (h < 12) h += 12; else h -= 12;
+
+      input.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+
+      // Update visual state
+      syncAMPM(prefix + 'Time', btnId);
+      updateTimeDisplay(input, prefix + 'TimeDisplay');
+    }
+
+    function setAMPM(id, isPM) {
+      const btn = document.getElementById(id);
+      if (isPM) {
+        btn.innerText = 'PM';
+        btn.classList.add('pm-active');
+        btn.classList.remove('am-active');
+      } else {
+        btn.innerText = 'AM';
+        btn.classList.add('am-active');
+        btn.classList.remove('pm-active');
+      }
+    }
+
+    // --- WIZARD & CORE ---
     function goToView(targetId) {
       if (typeof targetId === 'number') {
         if (targetId === 0) targetId = 'view-welcome';
@@ -852,102 +1010,10 @@
       }
     }
 
-    // --- DISPLAY FORMATTING LOGIC (NEW) ---
-    function updateDateDisplay(inputEl, displayId) {
-      const val = inputEl.value; // yyyy-MM-dd
-      if (!val) return;
-      // Force 'en' locale to get "FEB" instead of "2月", uppercase per Cyberpunk style
-      const dt = DateTime.fromISO(val);
-      document.getElementById(displayId).value = dt.setLocale('en').toFormat('dd MMM');
-    }
-
-    function updateTimeDisplay(inputEl, displayId) {
-      const val = inputEl.value; // HH:mm (24h)
-      if (!val) return;
-      const [h, m] = val.split(':').map(Number);
-      // Convert to 12h format (01-12)
-      let h12 = h % 12;
-      if (h12 === 0) h12 = 12;
-      const hStr = h12.toString().padStart(2, '0');
-      const mStr = m.toString().padStart(2, '0');
-      document.getElementById(displayId).value = `${hStr}:${mStr}`;
-    }
-
-    function initSplitInputs() {
-      const now = DateTime.now();
-      const sleepInit = now.minus({ hours: 8 });
-      const wakeInit = now;
-
-      // Set Real Inputs
-      const sDateInput = document.getElementById('sleepDate');
-      const sTimeInput = document.getElementById('sleepTime');
-      sDateInput.value = sleepInit.toFormat('yyyy-MM-dd');
-      sTimeInput.value = sleepInit.toFormat('HH:mm');
-
-      // Update Displays
-      updateDateDisplay(sDateInput, 'sleepDateDisplay');
-      updateTimeDisplay(sTimeInput, 'sleepTimeDisplay');
-      syncAMPM('sleepTime', 'sleepAMPM');
-
-      // Set Real Inputs (Wake)
-      const wDateInput = document.getElementById('wakeDate');
-      const wTimeInput = document.getElementById('wakeTime');
-      wDateInput.value = wakeInit.toFormat('yyyy-MM-dd');
-      wTimeInput.value = wakeInit.toFormat('HH:mm');
-
-      // Update Displays (Wake)
-      updateDateDisplay(wDateInput, 'wakeDateDisplay');
-      updateTimeDisplay(wTimeInput, 'wakeTimeDisplay');
-      syncAMPM('wakeTime', 'wakeAMPM');
-    }
-
-    function syncAMPM(inputId, btnId) {
-      const val = document.getElementById(inputId).value;
-      if (!val) return;
-      const h = parseInt(val.split(':')[0]);
-      setAMPM(btnId, h >= 12);
-    }
-
-    function toggleAMPM(btnId) {
-      const prefix = btnId.replace('AMPM', ''); // sleep or wake
-      const input = document.getElementById(prefix + 'Time');
-      if (!input.value) return;
-
-      let [h, m] = input.value.split(':').map(Number);
-
-      // Flip 12h block
-      if (h < 12) {
-        h += 12; // AM -> PM
-      } else {
-        h -= 12; // PM -> AM
-      }
-
-      // Update Real Input
-      input.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-
-      // Update Display and Button
-      syncAMPM(prefix + 'Time', btnId);
-      updateTimeDisplay(input, prefix + 'TimeDisplay');
-    }
-
-    function setAMPM(id, isPM) {
-      const btn = document.getElementById(id);
-      if (isPM) {
-        btn.innerText = 'PM';
-        btn.classList.add('pm-active');
-        btn.classList.remove('am-active');
-      } else {
-        btn.innerText = 'AM';
-        btn.classList.add('am-active');
-        btn.classList.remove('pm-active');
-      }
-    }
-
     function getSplitDateTime(prefix) {
       const dateStr = document.getElementById(prefix + 'Date').value;
       const timeStr = document.getElementById(prefix + 'Time').value;
       const zone = document.getElementById(prefix + 'Zone').value;
-
       if (!dateStr || !timeStr) return null;
       return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
     }
@@ -1003,7 +1069,6 @@
       el.value = def || userZone;
     };
 
-    // --- EXECUTION LOGIC ---
     function execute() {
       const t = translations[currentLang];
       const lastSleep = getSplitDateTime('sleep');
@@ -1142,53 +1207,45 @@
         const row = document.createElement('div');
         row.className = "hard-card p-6";
         row.innerHTML = `
-                    <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
-                        <span class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1">${t.day_prefix} ${item.i}/${item.totalDays}</span>
-                        <span class="text-[10px] text-emerald-500 font-mono text-right max-w-[60%] leading-tight">${desc}</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="sleep-border bg-slate-950 p-4 pl-5">
-                            <p class="text-[10px] text-blue-500 font-bold mb-1 uppercase tracking-wider">${t.label_sleep}</p>
-                            <p class="text-3xl font-bold text-white font-mono">${dispSleep.toFormat('HH:mm')}</p>
-                            <p class="text-xs text-slate-500 mt-1">${dispSleep.toFormat('MM-dd (cccc)')}</p>
-                        </div>
-                        <div class="wake-border bg-slate-950 p-4 pl-5">
-                            <p class="text-[10px] text-orange-500 font-bold mb-1 uppercase tracking-wider">${t.label_wake}</p>
-                            <p class="text-3xl font-bold text-white font-mono">${dispWake.toFormat('HH:mm')}</p>
-                            <p class="text-xs text-slate-500 mt-1">${dispWake.toFormat('MM-dd (cccc)')}</p>
-                        </div>
-                    </div>
-                `;
+            <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
+                <span class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1">${t.day_prefix} ${item.i}/${item.totalDays}</span>
+                <span class="text-[10px] text-emerald-500 font-mono text-right max-w-[60%] leading-tight">${desc}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="sleep-border bg-slate-950 p-4 pl-5">
+                    <p class="text-[10px] text-blue-500 font-bold mb-1 uppercase tracking-wider">${t.label_sleep}</p>
+                    <p class="text-3xl font-bold text-white font-mono">${dispSleep.toFormat('HH:mm')}</p>
+                    <p class="text-xs text-slate-500 mt-1">${dispSleep.toFormat('MM-dd (cccc)')}</p>
+                </div>
+                <div class="wake-border bg-slate-950 p-4 pl-5">
+                    <p class="text-[10px] text-orange-500 font-bold mb-1 uppercase tracking-wider">${t.label_wake}</p>
+                    <p class="text-3xl font-bold text-white font-mono">${dispWake.toFormat('HH:mm')}</p>
+                    <p class="text-xs text-slate-500 mt-1">${dispWake.toFormat('MM-dd (cccc)')}</p>
+                </div>
+            </div>
+        `;
         container.appendChild(row);
       });
     }
 
     function exportToCalendar() {
       if (!globalPlan || globalPlan.length === 0) return;
-
-      let icsMsg = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Jetlag Commander//V10.8.1//EN\n";
       const t = translations[currentLang];
-
+      let icsMsg = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Jetlag Commander//V10.9.4//EN\n";
       globalPlan.forEach(item => {
         const formatICS = (dt) => dt.toUTC().toFormat("yyyyMMdd'T'HHmmss'Z'");
-
-        // Sleep Event
         icsMsg += "BEGIN:VEVENT\n";
         icsMsg += `SUMMARY:${t.label_sleep} (Day ${item.i})\n`;
         icsMsg += `DTSTART:${formatICS(item.sleepTime)}\n`;
         icsMsg += `DTEND:${formatICS(item.sleepTime.plus({ minutes: 30 }))}\n`;
         icsMsg += "END:VEVENT\n";
-
-        // Wake Event
         icsMsg += "BEGIN:VEVENT\n";
         icsMsg += `SUMMARY:${t.label_wake} (Day ${item.i})\n`;
         icsMsg += `DTSTART:${formatICS(item.wakeTime)}\n`;
         icsMsg += `DTEND:${formatICS(item.wakeTime.plus({ minutes: 30 }))}\n`;
         icsMsg += "END:VEVENT\n";
       });
-
       icsMsg += "END:VCALENDAR";
-
       const blob = new Blob([icsMsg], { type: 'text/calendar;charset=utf-8' });
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
@@ -1203,8 +1260,10 @@
     populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
     populate('targetZone', "Asia/Shanghai");
     populate('displayZoneSelect', "Asia/Shanghai");
-
     initSplitInputs();
+
+    // RUN DETECTION
+    detectDevice();
 
     const browserLang = navigator.language || navigator.userLanguage;
     if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
