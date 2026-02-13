@@ -4,21 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V10.9.0b</title>
+  <title>JETLAG COMMANDER // V10.9.2b by Louie Tang</title>
   <link rel="stylesheet" href="lib/fonts.css">
-  <script src="lib/tailwindcss.js"></script>
-  <script src="lib/luxon.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
   <style>
+    /* -----------------------
+       CORE STYLES
+       ----------------------- */
     body {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
       background-color: #020617;
       color: #e2e8f0;
       overflow-x: hidden;
     }
 
     /* -----------------------
-           Wizard Transition
-           ----------------------- */
+       WIZARD TRANSITION
+       ----------------------- */
     .view-section {
       display: none;
       opacity: 0;
@@ -31,8 +34,76 @@
     }
 
     /* -----------------------
-           Cyberpunk AM/PM Toggle
-           ----------------------- */
+       INPUT LAYOUT (MODIFIED)
+       ----------------------- */
+    .split-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .row-main {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .row-zone {
+      width: 100%;
+    }
+
+    /* 隐藏真实的 input，但保留功能 */
+    .real-input-hidden {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* 可见的显示框 */
+    .custom-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 12px 0;
+      font-family: inherit;
+      font-size: 1rem;
+      text-align: center;
+      border-radius: 0;
+      outline: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
+      width: 100%;
+      height: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .custom-input:focus,
+    .custom-input:hover {
+      border-color: #10b981;
+    }
+
+    .zone-select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 12px;
+      text-align: center;
+      outline: none;
+    }
+
+    /* -----------------------
+       AM/PM TOGGLE
+       ----------------------- */
     .ampm-toggle {
       background: #0f172a;
       border: 1px solid #334155;
@@ -41,10 +112,10 @@
       font-weight: bold;
       padding: 0 12px;
       transition: all 0.2s;
-      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 60px;
     }
 
     .ampm-toggle.am-active {
@@ -62,8 +133,8 @@
     }
 
     /* -----------------------
-           Cards & Buttons
-           ----------------------- */
+       CARDS & BUTTONS
+       ----------------------- */
     .radio-hidden {
       position: absolute;
       opacity: 0;
@@ -71,7 +142,6 @@
       height: 0;
     }
 
-    /* Restored Card Style from Image */
     .strategy-card {
       cursor: pointer;
       background-color: #0f172a;
@@ -84,7 +154,6 @@
       transition: all 0.2s ease-in-out;
       position: relative;
       min-height: 200px;
-      /* Taller for vertical spacing */
     }
 
     .strategy-card:hover {
@@ -141,79 +210,6 @@
       margin-bottom: 0.5rem;
     }
 
-    .hard-card {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 0;
-    }
-
-    .sleep-border {
-      border-left: 4px solid #3b82f6;
-    }
-
-    .wake-border {
-      border-left: 4px solid #f97316;
-    }
-
-    /* Inputs */
-    .split-input-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #020617;
-      border: 1px solid #334155;
-      padding: 12px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .custom-input {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #f8fafc;
-      padding: 12px;
-      font-family: inherit;
-      font-size: 1rem;
-      text-align: center;
-      border-radius: 0;
-      outline: none;
-    }
-
-    .custom-input:focus {
-      border-color: #10b981;
-    }
-
-    input[type="date"] {
-      flex: 2;
-      text-transform: uppercase;
-    }
-
-    .time-num {
-      width: 60px;
-    }
-
-    .zone-select {
-      flex: 1;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #94a3b8;
-      font-size: 0.8rem;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .colon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #475569;
-    }
-
-    /* Restored Input Style inside Card */
     .days-input {
       background: #000;
       border: 1px solid #475569;
@@ -234,17 +230,7 @@
       justify-content: space-between;
     }
 
-    .display-select {
-      background-color: #0f172a;
-      color: #10b981;
-      border: 1px solid #334155;
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    /* Action Button */
+    /* ACTION BUTTON */
     .action-btn {
       width: 100%;
       background-color: #059669;
@@ -266,7 +252,7 @@
       transform: scale(0.98);
     }
 
-    /* Info Trigger */
+    /* INFO TRIGGER */
     .info-trigger {
       font-size: 0.7rem;
       color: #475569;
@@ -286,12 +272,36 @@
       border-color: #10b981;
     }
 
-    /* Custom Text Colors */
+    /* RESULT STYLES */
+    .hard-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0;
+    }
+
+    .sleep-border {
+      border-left: 4px solid #3b82f6;
+    }
+
+    .wake-border {
+      border-left: 4px solid #f97316;
+    }
+
+    .display-select {
+      background-color: #0f172a;
+      color: #10b981;
+      border: 1px solid #334155;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      outline: none;
+      cursor: pointer;
+    }
+
     .text-yellow-cyber {
       color: #fbbf24;
     }
 
-    /* Knowledge Base Styling */
+    /* KB STYLES */
     .kb-header {
       color: #10b981;
       font-weight: bold;
@@ -316,19 +326,6 @@
       line-height: 1.6;
       margin-bottom: 1.5rem;
     }
-
-    .kb-highlight {
-      color: #e2e8f0;
-      font-weight: bold;
-    }
-
-    .kb-sub {
-      color: #64748b;
-      font-size: 0.75rem;
-      margin-top: -1rem;
-      margin-bottom: 1.5rem;
-      display: block;
-    }
   </style>
 </head>
 
@@ -338,7 +335,7 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.0b by Louie Tang</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.2b by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -371,16 +368,23 @@
             <span class="info-trigger" onclick="goToView('info-sleep')" data-i18n="btn_what">[?] 这是什么</span>
           </label>
           <div class="split-input-container shadow-lg">
-            <div class="input-row">
-              <input type="date" id="sleepDate" class="custom-input flex-1" onclick="try{this.showPicker()}catch(e){}">
+            <div class="row-main">
+              <div class="relative flex-1">
+                <input type="text" id="sleepDateDisplay" class="custom-input" readonly
+                  onclick="document.getElementById('sleepDate').showPicker()">
+                <input type="date" id="sleepDate" class="real-input-hidden"
+                  onchange="updateDateDisplay(this, 'sleepDateDisplay')">
+              </div>
+              <div class="relative flex-1">
+                <input type="text" id="sleepTimeDisplay" class="custom-input" readonly
+                  onclick="document.getElementById('sleepTime').showPicker()">
+                <input type="time" id="sleepTime" class="real-input-hidden"
+                  onchange="updateTimeDisplay(this, 'sleepTimeDisplay'); syncAMPM('sleepTime', 'sleepAMPM')">
+              </div>
+              <button id="sleepAMPM" class="ampm-toggle flex-none" onclick="toggleAMPM('sleepAMPM')">AM</button>
             </div>
-            <div class="input-row">
-              <input type="time" id="sleepTime" class="custom-input flex-1" style="color-scheme: dark;"
-                onclick="try{this.showPicker()}catch(e){}">
-              <button id="sleepAMPM" class="ampm-toggle" onclick="toggleAMPM('sleepAMPM')">AM</button>
-            </div>
-            <div class="input-row">
-              <select id="sleepZone" class="zone-select w-full"></select>
+            <div class="row-zone">
+              <select id="sleepZone" class="zone-select"></select>
             </div>
           </div>
         </div>
@@ -391,16 +395,23 @@
             <span class="info-trigger" onclick="goToView('info-wake')" data-i18n="btn_what">[?] 这是什么</span>
           </label>
           <div class="split-input-container shadow-lg">
-            <div class="input-row">
-              <input type="date" id="wakeDate" class="custom-input flex-1" onclick="try{this.showPicker()}catch(e){}">
+            <div class="row-main">
+              <div class="relative flex-1">
+                <input type="text" id="wakeDateDisplay" class="custom-input" readonly
+                  onclick="document.getElementById('wakeDate').showPicker()">
+                <input type="date" id="wakeDate" class="real-input-hidden"
+                  onchange="updateDateDisplay(this, 'wakeDateDisplay')">
+              </div>
+              <div class="relative flex-1">
+                <input type="text" id="wakeTimeDisplay" class="custom-input" readonly
+                  onclick="document.getElementById('wakeTime').showPicker()">
+                <input type="time" id="wakeTime" class="real-input-hidden"
+                  onchange="updateTimeDisplay(this, 'wakeTimeDisplay'); syncAMPM('wakeTime', 'wakeAMPM')">
+              </div>
+              <button id="wakeAMPM" class="ampm-toggle flex-none" onclick="toggleAMPM('wakeAMPM')">AM</button>
             </div>
-            <div class="input-row">
-              <input type="time" id="wakeTime" class="custom-input flex-1" style="color-scheme: dark;"
-                onclick="try{this.showPicker()}catch(e){}">
-              <button id="wakeAMPM" class="ampm-toggle" onclick="toggleAMPM('wakeAMPM')">AM</button>
-            </div>
-            <div class="input-row">
-              <select id="wakeZone" class="zone-select w-full"></select>
+            <div class="row-zone">
+              <select id="wakeZone" class="zone-select"></select>
             </div>
           </div>
         </div>
@@ -422,7 +433,6 @@
     </div>
 
     <div id="view-strategy" class="view-section">
-
       <div class="space-y-4 mb-8">
         <label class="text-xs font-bold text-white uppercase flex items-center justify-start">
           <span data-i18n="step_dir">时差调整方向设置</span>
@@ -696,7 +706,6 @@
         badge_force_early: "MODE: 强制早睡",
         badge_force_late: "MODE: 强制熬夜",
 
-        // KB - CHINESE (GROUNDED)
         kb_id_01: "DATA ANCHOR 01",
         kb_sleep_title: "时间锚点:入睡时间",
         kb_sleep_desc: "别填飞机起飞时间！别填你打算几点睡！<br>这里要的是你<strong>上次睡觉睡着的大致时间</strong>",
@@ -772,7 +781,6 @@
         badge_force_early: "MODE: FORCE EARLY",
         badge_force_late: "MODE: FORCE LATE",
 
-        // KB - ENGLISH (GROUNDED)
         kb_id_01: "DATA ANCHOR 01",
         kb_sleep_title: "Real Sleep Time: When You Blacked Out",
         kb_sleep_desc: "Don't put your flight takeoff time! Don't put when you 'planned' to sleep!<br><br>We need the exact moment you actually <strong>closed your eyes and drifted off</strong>. The algorithm needs to know when your biological battery started charging. Garbage in, garbage out.",
@@ -844,18 +852,52 @@
       }
     }
 
-    // --- UI UTILS ---
+    // --- DISPLAY FORMATTING LOGIC (NEW) ---
+    function updateDateDisplay(inputEl, displayId) {
+      const val = inputEl.value; // yyyy-MM-dd
+      if (!val) return;
+      // Force 'en' locale to get "FEB" instead of "2月", uppercase per Cyberpunk style
+      const dt = DateTime.fromISO(val);
+      document.getElementById(displayId).value = dt.setLocale('en').toFormat('dd MMM');
+    }
+
+    function updateTimeDisplay(inputEl, displayId) {
+      const val = inputEl.value; // HH:mm (24h)
+      if (!val) return;
+      const [h, m] = val.split(':').map(Number);
+      // Convert to 12h format (01-12)
+      let h12 = h % 12;
+      if (h12 === 0) h12 = 12;
+      const hStr = h12.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, '0');
+      document.getElementById(displayId).value = `${hStr}:${mStr}`;
+    }
+
     function initSplitInputs() {
       const now = DateTime.now();
       const sleepInit = now.minus({ hours: 8 });
       const wakeInit = now;
 
-      document.getElementById('sleepDate').value = sleepInit.toFormat('yyyy-MM-dd');
-      document.getElementById('sleepTime').value = sleepInit.toFormat('HH:mm');
+      // Set Real Inputs
+      const sDateInput = document.getElementById('sleepDate');
+      const sTimeInput = document.getElementById('sleepTime');
+      sDateInput.value = sleepInit.toFormat('yyyy-MM-dd');
+      sTimeInput.value = sleepInit.toFormat('HH:mm');
+
+      // Update Displays
+      updateDateDisplay(sDateInput, 'sleepDateDisplay');
+      updateTimeDisplay(sTimeInput, 'sleepTimeDisplay');
       syncAMPM('sleepTime', 'sleepAMPM');
 
-      document.getElementById('wakeDate').value = wakeInit.toFormat('yyyy-MM-dd');
-      document.getElementById('wakeTime').value = wakeInit.toFormat('HH:mm');
+      // Set Real Inputs (Wake)
+      const wDateInput = document.getElementById('wakeDate');
+      const wTimeInput = document.getElementById('wakeTime');
+      wDateInput.value = wakeInit.toFormat('yyyy-MM-dd');
+      wTimeInput.value = wakeInit.toFormat('HH:mm');
+
+      // Update Displays (Wake)
+      updateDateDisplay(wDateInput, 'wakeDateDisplay');
+      updateTimeDisplay(wTimeInput, 'wakeTimeDisplay');
       syncAMPM('wakeTime', 'wakeAMPM');
     }
 
@@ -866,14 +908,26 @@
       setAMPM(btnId, h >= 12);
     }
 
-    function toggleAMPM(id) {
-      const prefix = id.replace('AMPM', '');
+    function toggleAMPM(btnId) {
+      const prefix = btnId.replace('AMPM', ''); // sleep or wake
       const input = document.getElementById(prefix + 'Time');
       if (!input.value) return;
+
       let [h, m] = input.value.split(':').map(Number);
-      if (h < 12) h += 12; else h -= 12;
+
+      // Flip 12h block
+      if (h < 12) {
+        h += 12; // AM -> PM
+      } else {
+        h -= 12; // PM -> AM
+      }
+
+      // Update Real Input
       input.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      syncAMPM(prefix + 'Time', id);
+
+      // Update Display and Button
+      syncAMPM(prefix + 'Time', btnId);
+      updateTimeDisplay(input, prefix + 'TimeDisplay');
     }
 
     function setAMPM(id, isPM) {
@@ -949,21 +1003,7 @@
       el.value = def || userZone;
     };
 
-    populate('sleepZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
-    populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
-    populate('targetZone', "Asia/Shanghai");
-    populate('displayZoneSelect', "Asia/Shanghai");
-
-    initSplitInputs();
-
-    document.getElementById('sleepTime').addEventListener('input', () => syncAMPM('sleepTime', 'sleepAMPM'));
-    document.getElementById('wakeTime').addEventListener('input', () => syncAMPM('wakeTime', 'wakeAMPM'));
-
-    const browserLang = navigator.language || navigator.userLanguage;
-    if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
-    applyLanguage();
-
-    // --- LOGIC ---
+    // --- EXECUTION LOGIC ---
     function execute() {
       const t = translations[currentLang];
       const lastSleep = getSplitDateTime('sleep');
@@ -1123,7 +1163,6 @@
       });
     }
 
-    // --- OFFLINE & CALENDAR EXPORT ---
     function exportToCalendar() {
       if (!globalPlan || globalPlan.length === 0) return;
 
@@ -1158,6 +1197,19 @@
       link.click();
       document.body.removeChild(link);
     }
+
+    // INIT
+    populate('sleepZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    populate('targetZone', "Asia/Shanghai");
+    populate('displayZoneSelect', "Asia/Shanghai");
+
+    initSplitInputs();
+
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
+    applyLanguage();
+
   </script>
 </body>
 
