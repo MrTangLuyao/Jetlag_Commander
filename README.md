@@ -34,8 +34,8 @@ It is designed for long‑haul flights, shift work recovery, and fixing late‑n
 ## Tech Stack
 
 - HTML5 single page.  
-- Tailwind CSS via CDN.  
-- Luxon.js for time zone calculations.
+- Tailwind CSS
+- Luxon.js for time zone calculations
 
 ## License
 
@@ -80,8 +80,8 @@ Jetlag Commander 是纯前端网页应用，通过你提供的时间信息，计
 ## 技术栈
 
 - HTML5 单页。  
-- Tailwind CSS（CDN 引入）。  
-- Luxon.js 负责时区和时间计算。
+- Tailwind CSS  
+- Luxon.js 负责时区和时间计算
 
 ## 许可证
 
