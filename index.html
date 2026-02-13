@@ -4,12 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V10.8.1</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+  <title>JETLAG COMMANDER // V10.9.0</title>
+  <link rel="stylesheet" href="lib/fonts.css">
+  <script src="lib/tailwindcss.js"></script>
+  <script src="lib/luxon.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-
     body {
       font-family: 'JetBrains Mono', monospace;
       background-color: #020617;
@@ -339,7 +338,7 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.8.1</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.0 by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -599,7 +598,7 @@
 
     <div id="info-wake" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_02">DATA ANCHOR 02</h2>
-      <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：皮质醇唤醒</h3>
+      <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：开机时间</h3>
       <p class="kb-text" data-i18n="kb_wake_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
@@ -607,7 +606,7 @@
 
     <div id="info-target" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_03">TARGET FRAME</h2>
-      <h3 class="kb-title" data-i18n="kb_target_title">目标参考系</h3>
+      <h3 class="kb-title" data-i18n="kb_target_title">目标：最后那张床</h3>
       <p class="kb-text" data-i18n="kb_target_desc">...</p>
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
@@ -615,7 +614,7 @@
 
     <div id="info-dir" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_04">VECTOR CONTROL</h2>
-      <h3 class="kb-title" data-i18n="kb_dir_title">相位动力学</h3>
+      <h3 class="kb-title" data-i18n="kb_dir_title">早睡 vs 熬夜</h3>
       <p class="kb-text" data-i18n="kb_dir_desc">...</p>
       <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
@@ -699,22 +698,22 @@
         badge_force_early: "MODE: 强制早睡",
         badge_force_late: "MODE: 强制熬夜",
 
-        // KB
+        // KB - CHINESE (GROUNDED)
         kb_id_01: "DATA ANCHOR 01",
-        kb_sleep_title: "生理锚点：生物钟基线",
-        kb_sleep_desc: "算法计算需要基于你身体当前的真实相位。请输入你上一次经历的<strong>实际入睡时间</strong>，即中枢神经系统进入休眠的时间点。<br><br>严禁输入：机票上的起飞时间、落地时间或你“计划”睡觉的时间。<br>必须输入：你闭上眼并实际失去意识的时间。这是计算体内褪黑素分泌相位的物理基准。",
+        kb_sleep_title: "时间锚点:入睡时间",
+        kb_sleep_desc: "别填飞机起飞时间！别填你打算几点睡！<br>这里要的是你<strong>上次睡觉睡着的大致时间</strong>",
 
         kb_id_02: "DATA ANCHOR 02",
-        kb_wake_title: "光照重置：皮质醇唤醒",
-        kb_wake_desc: "唤醒时间标记了视交叉上核 (SCN) 接收第一缕光线信号的时刻，这通常对应体内皮质醇脉冲的起始点。<br><br>该数据决定了你当前“主观日”的长度。算法将利用此数据计算你的内源性节律与目标时区之间的相位差 (Δt)。数据的精确度直接决定了相位平移的效率。",
+        kb_wake_title: "时间锚点：上一次起床时间",
+        kb_wake_desc: "填写<strong>今天起床</strong>的时间。<br><br>",
 
         kb_id_03: "TARGET FRAME",
-        kb_target_title: "目标参考系",
-        kb_target_desc: "这是你试图将生物钟“平移”到的新时空坐标。<br><br>系统将计算你的生物时间 (Internal Time) 与该地理时间 (External Time) 之间的偏移量。请务必选择目的地的标准时间，而非中转地时间。",
+        kb_target_title: "目标时区",
+        kb_target_desc: "填写你想倒的目标地点<br><br>别管中转地，别管经停站，直接选最终目的地。如果是熬夜倒时差则保持现有地就行",
 
         kb_id_04: "VECTOR CONTROL",
-        kb_dir_title: "相位动力学",
-        kb_dir_desc: "人类的内源性节律周期平均约为 24.2 小时。这意味着“向后推迟 (Delay)”（如熬夜）顺应了生物惯性，在此方向上的调整阻力较小，生理代价较低。<br><br>相反，“向前提前 (Advance)”（如早起）需要压缩生物节律，是一个逆熵过程，难度较大。<br><br><strong>智能判断</strong>模块通过计算两种路径的生理代价函数，自动为你选择能耗最低的方案。例如，虽然早睡 4 小时理论上更近，但身体可能无法执行，系统可能会建议通过熬夜 20 小时来达成同相同步。",
+        kb_dir_title: "早睡 vs 熬夜",
+        kb_dir_desc: "人这身体啊，<strong>熬夜容易早起难</strong>。一天24小时，但生物钟其实有点“拖延症”（24.2小时），所以晚睡它是开心的，早起它是抗拒的。<br><br><strong>智能判断</strong>：系统会自动帮你算算，是现在咬牙少睡几小时划算，还是干脆通宵熬一熬更轻松。相信算法，它是专业的，能让你少受点罪。",
 
         kb_id_05: "COMPUTE KERNEL",
         kb_algo_title: "算法模型架构",
@@ -775,22 +774,22 @@
         badge_force_early: "MODE: FORCE EARLY",
         badge_force_late: "MODE: FORCE LATE",
 
-        // KB - English Translation
+        // KB - ENGLISH (GROUNDED)
         kb_id_01: "DATA ANCHOR 01",
-        kb_sleep_title: "Biological Anchor: Baseline Onset",
-        kb_sleep_desc: "Calculation relies on your current <strong>biological phase</strong>. Please input your <strong>actual last sleep time</strong>.<br><br>Do not input: Flight takeoff time or planned bedtime.<br>Must input: The time you actually fell asleep. This is the physical baseline for melatonin onset calculation.",
+        kb_sleep_title: "Real Sleep Time: When You Blacked Out",
+        kb_sleep_desc: "Don't put your flight takeoff time! Don't put when you 'planned' to sleep!<br><br>We need the exact moment you actually <strong>closed your eyes and drifted off</strong>. The algorithm needs to know when your biological battery started charging. Garbage in, garbage out.",
 
         kb_id_02: "DATA ANCHOR 02",
-        kb_wake_title: "Photic Reset: Cortisol Awakening",
-        kb_wake_desc: "Wake time marks the moment the SCN receives the first light signal.<br><br>This defines your current \"subjective day\" length. The algorithm calculates the Phase Difference (Δt) based on this.",
+        kb_wake_title: "System Boot: When You Opened Your Eyes",
+        kb_wake_desc: "This is simply when you <strong>opened your eyes</strong> today. Whether you woke up naturally or a chaotic alarm dragged you out, this moment started your biological day.<br><br>This timestamp tells us exactly where your internal clock is currently pointing. Don't lie about snoozing.",
 
         kb_id_03: "TARGET FRAME",
-        kb_target_title: "Reference Frame",
-        kb_target_desc: "This is the new spatio-temporal coordinate you are trying to \"shift\" your body into.<br><br>Please select the standard time of your destination, not layover times.",
+        kb_target_title: "The Goal: Final Destination",
+        kb_target_desc: "Where are you headed? Select the <strong>standard time</strong> of your final destination.<br><br>Ignore layovers, ignore stopovers. Your body only cares about where it's going to crash tonight.",
 
         kb_id_04: "VECTOR CONTROL",
-        kb_dir_title: "Phase Dynamics",
-        kb_dir_desc: "Intrinstic circadian period > 24h. \"Delaying\" (staying up) is easier.<br>\"Advancing\" (waking early) is harder.<br><br><strong>Smart Auto</strong> calculates physiological cost and selects the path of least resistance.",
+        kb_dir_title: "Hard Mode vs Easy Mode",
+        kb_dir_desc: "Here's the truth: <strong>Staying up (Delaying) is easy, waking up early (Advancing) is hard.</strong> Your body naturally wants to drift later.<br><br><strong>Smart Auto</strong>: Let the system do the math. It calculates if it's less painful to force yourself awake or just power through and stay up late. Trust the math.",
 
         kb_id_05: "COMPUTE KERNEL",
         kb_algo_title: "Algorithm Architecture",
