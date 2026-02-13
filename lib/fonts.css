@@ -1,0 +1,15 @@
+/* 常规体 (Regular 400) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('JetBrainsMono.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* 粗体 (Bold 700) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('JetBrainsMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
