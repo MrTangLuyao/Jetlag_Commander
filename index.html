@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JETLAG COMMANDER // V10.9.0</title>
+  <title>JETLAG COMMANDER // V10.9.0b</title>
   <link rel="stylesheet" href="lib/fonts.css">
   <script src="lib/tailwindcss.js"></script>
   <script src="lib/luxon.min.js"></script>
@@ -338,7 +338,7 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.0 by Louie Tang</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.9.0b by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <button id="langBtn" onclick="toggleLanguage()"
@@ -372,12 +372,11 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="date" id="sleepDate" class="custom-input flex-1">
+              <input type="date" id="sleepDate" class="custom-input flex-1" onclick="try{this.showPicker()}catch(e){}">
             </div>
             <div class="input-row">
-              <input type="number" id="sleepHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
-              <span class="colon">:</span>
-              <input type="number" id="sleepMM" placeholder="MM" min="0" max="59" class="custom-input time-num flex-1">
+              <input type="time" id="sleepTime" class="custom-input flex-1" style="color-scheme: dark;"
+                onclick="try{this.showPicker()}catch(e){}">
               <button id="sleepAMPM" class="ampm-toggle" onclick="toggleAMPM('sleepAMPM')">AM</button>
             </div>
             <div class="input-row">
@@ -393,12 +392,11 @@
           </label>
           <div class="split-input-container shadow-lg">
             <div class="input-row">
-              <input type="date" id="wakeDate" class="custom-input flex-1">
+              <input type="date" id="wakeDate" class="custom-input flex-1" onclick="try{this.showPicker()}catch(e){}">
             </div>
             <div class="input-row">
-              <input type="number" id="wakeHH" placeholder="HH" min="1" max="12" class="custom-input time-num flex-1">
-              <span class="colon">:</span>
-              <input type="number" id="wakeMM" placeholder="MM" min="0" max="59" class="custom-input time-num flex-1">
+              <input type="time" id="wakeTime" class="custom-input flex-1" style="color-scheme: dark;"
+                onclick="try{this.showPicker()}catch(e){}">
               <button id="wakeAMPM" class="ampm-toggle" onclick="toggleAMPM('wakeAMPM')">AM</button>
             </div>
             <div class="input-row">
@@ -853,26 +851,29 @@
       const wakeInit = now;
 
       document.getElementById('sleepDate').value = sleepInit.toFormat('yyyy-MM-dd');
-      let sH = sleepInit.hour;
-      let sIsPM = sH >= 12;
-      if (sH === 0) sH = 12; else if (sH > 12) sH -= 12;
-      document.getElementById('sleepHH').value = sH;
-      document.getElementById('sleepMM').value = sleepInit.minute;
-      setAMPM('sleepAMPM', sIsPM);
+      document.getElementById('sleepTime').value = sleepInit.toFormat('HH:mm');
+      syncAMPM('sleepTime', 'sleepAMPM');
 
       document.getElementById('wakeDate').value = wakeInit.toFormat('yyyy-MM-dd');
-      let wH = wakeInit.hour;
-      let wIsPM = wH >= 12;
-      if (wH === 0) wH = 12; else if (wH > 12) wH -= 12;
-      document.getElementById('wakeHH').value = wH;
-      document.getElementById('wakeMM').value = wakeInit.minute;
-      setAMPM('wakeAMPM', wIsPM);
+      document.getElementById('wakeTime').value = wakeInit.toFormat('HH:mm');
+      syncAMPM('wakeTime', 'wakeAMPM');
+    }
+
+    function syncAMPM(inputId, btnId) {
+      const val = document.getElementById(inputId).value;
+      if (!val) return;
+      const h = parseInt(val.split(':')[0]);
+      setAMPM(btnId, h >= 12);
     }
 
     function toggleAMPM(id) {
-      const btn = document.getElementById(id);
-      const isPM = btn.innerText === 'PM';
-      setAMPM(id, !isPM);
+      const prefix = id.replace('AMPM', '');
+      const input = document.getElementById(prefix + 'Time');
+      if (!input.value) return;
+      let [h, m] = input.value.split(':').map(Number);
+      if (h < 12) h += 12; else h -= 12;
+      input.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      syncAMPM(prefix + 'Time', id);
     }
 
     function setAMPM(id, isPM) {
@@ -890,16 +891,10 @@
 
     function getSplitDateTime(prefix) {
       const dateStr = document.getElementById(prefix + 'Date').value;
-      let hh = parseInt(document.getElementById(prefix + 'HH').value);
-      const mm = parseInt(document.getElementById(prefix + 'MM').value);
-      const isPM = document.getElementById(prefix + 'AMPM').innerText === 'PM';
+      const timeStr = document.getElementById(prefix + 'Time').value;
       const zone = document.getElementById(prefix + 'Zone').value;
 
-      if (!dateStr || isNaN(hh) || isNaN(mm)) return null;
-      if (isPM && hh < 12) hh += 12;
-      if (!isPM && hh === 12) hh = 0;
-
-      const timeStr = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+      if (!dateStr || !timeStr) return null;
       return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
     }
 
@@ -960,6 +955,9 @@
     populate('displayZoneSelect', "Asia/Shanghai");
 
     initSplitInputs();
+
+    document.getElementById('sleepTime').addEventListener('input', () => syncAMPM('sleepTime', 'sleepAMPM'));
+    document.getElementById('wakeTime').addEventListener('input', () => syncAMPM('wakeTime', 'wakeAMPM'));
 
     const browserLang = navigator.language || navigator.userLanguage;
     if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
