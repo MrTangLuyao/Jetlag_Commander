@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>JETLAG COMMANDER // V10.11.1 by Louie Tang</title>
+  <title>JETLAG COMMANDER // v11.1.1 by Louie Tang</title>
   <script src="lib/tailwindcss.js"></script>
   <script src="lib/luxon.min.js"></script>
   <style>
@@ -14,17 +14,19 @@
     @font-face {
       font-family: 'JetBrains Mono';
       src: url('lib/JetBrainsMono-Bold.woff2') format('woff2');
-      font-weight: bold;
+      font-weight: normal;
       font-style: normal;
     }
 
     body {
-      /* 修正 Windows 下中文显示宋体的问题，优先调用微软雅黑，不影响英文字体风格 */
       font-family: 'JetBrains Mono', "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
       background-color: #020617;
       color: #e2e8f0;
       overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-weight: 400;
     }
 
     input,
@@ -34,9 +36,8 @@
     }
 
     /* -----------------------
-       ANIMATIONS (NEW)
+       ANIMATIONS
        ----------------------- */
-
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -76,9 +77,8 @@
     }
 
     /* -----------------------
-       INPUT SYSTEM (PRESERVED LOGIC)
+       INPUT SYSTEM
        ----------------------- */
-
     .input-stack {
       position: relative;
       flex: 1;
@@ -388,6 +388,10 @@
       color: #fbbf24;
     }
 
+    .text-purple-cyber {
+      color: #c084fc;
+    }
+
     .kb-header {
       color: #10b981;
       font-weight: bold;
@@ -415,6 +419,23 @@
       opacity: 0;
       animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
+
+    /* Dropdown Styles */
+    .pro-select {
+      width: 100%;
+      background-color: #020617;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      margin-top: 8px;
+      outline: none;
+    }
+
+    .pro-select:focus {
+      border-color: #10b981;
+    }
   </style>
 </head>
 
@@ -424,19 +445,13 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.11.1 by Louie Tang</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v11.1.1 by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <div class="flex gap-2">
-        <button id="licenseBtn" onclick="goToView('view-license')" class="header-btn">
-          LICENSES
-        </button>
-        <button id="compatBtn" onclick="toggleCompatMode()" class="header-btn">
-          PC
-        </button>
-        <button id="langBtn" onclick="toggleLanguage()" class="header-btn">
-          EN / 中
-        </button>
+        <button id="licenseBtn" onclick="goToView('view-license')" class="header-btn">LICENSES</button>
+        <button id="compatBtn" onclick="toggleCompatMode()" class="header-btn">PC</button>
+        <button id="langBtn" onclick="toggleLanguage()" class="header-btn">EN / 中</button>
       </div>
     </div>
 
@@ -446,9 +461,7 @@
       <p class="text-slate-400 mb-12 px-4 leading-relaxed text-sm md:text-base" data-i18n="welcome_desc">
         Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。
       </p>
-      <button onclick="goToView(1)" class="action-btn max-w-xs mx-auto" data-i18n="btn_start">
-        开始
-      </button>
+      <button onclick="goToView(1)" class="action-btn max-w-xs mx-auto" data-i18n="btn_start">开始</button>
     </div>
 
     <div id="view-license" class="view-section max-w-2xl mx-auto pt-8">
@@ -473,13 +486,9 @@
     </div>
 
     <div id="view-inputs" class="view-section max-w-2xl mx-auto">
-
       <h3 class="text-emerald-500 text-xs font-bold uppercase mb-6 tracking-widest border-l-2 border-emerald-500 pl-3">
-        Phase 1: Data Injection
-      </h3>
-
+        Phase 1: Data Injection</h3>
       <div class="space-y-8">
-
         <div class="space-y-2">
           <label class="text-xs font-bold text-slate-500 uppercase flex items-center justify-start">
             <span data-i18n="step1">Step 1: 上一次入睡时间</span>
@@ -492,20 +501,15 @@
                 <input type="date" id="sleepDate" class="hybrid-input"
                   oninput="updateDateDisplay(this, 'sleepDateDisplay')">
               </div>
-
               <div class="input-stack">
                 <span id="sleepTimeDisplay" class="display-layer">--:--</span>
                 <input type="time" id="sleepTime" class="hybrid-input"
                   oninput="updateTimeDisplay(this, 'sleepTimeDisplay'); syncAMPM('sleepTime', 'sleepAMPM')"
                   onchange="updateTimeDisplay(this, 'sleepTimeDisplay'); syncAMPM('sleepTime', 'sleepAMPM')">
               </div>
-
               <button id="sleepAMPM" class="ampm-toggle" onclick="toggleAMPM('sleepAMPM')">AM</button>
             </div>
-
-            <div class="row-zone">
-              <select id="sleepZone" class="zone-select"></select>
-            </div>
+            <div class="row-zone"><select id="sleepZone" class="zone-select"></select></div>
           </div>
         </div>
 
@@ -521,20 +525,15 @@
                 <input type="date" id="wakeDate" class="hybrid-input"
                   oninput="updateDateDisplay(this, 'wakeDateDisplay')">
               </div>
-
               <div class="input-stack">
                 <span id="wakeTimeDisplay" class="display-layer">--:--</span>
                 <input type="time" id="wakeTime" class="hybrid-input"
                   oninput="updateTimeDisplay(this, 'wakeTimeDisplay'); syncAMPM('wakeTime', 'wakeAMPM')"
                   onchange="updateTimeDisplay(this, 'wakeTimeDisplay'); syncAMPM('wakeTime', 'wakeAMPM')">
               </div>
-
               <button id="wakeAMPM" class="ampm-toggle" onclick="toggleAMPM('wakeAMPM')">AM</button>
             </div>
-
-            <div class="row-zone">
-              <select id="wakeZone" class="zone-select"></select>
-            </div>
+            <div class="row-zone"><select id="wakeZone" class="zone-select"></select></div>
           </div>
         </div>
 
@@ -548,10 +547,7 @@
             class="w-full bg-slate-900 border border-emerald-900 text-emerald-500 p-4 text-sm focus:outline-none focus:border-emerald-500 rounded-none"></select>
         </div>
       </div>
-
-      <button onclick="goToView(2)" class="action-btn mt-8" data-i18n="btn_next">
-        下一步 >>
-      </button>
+      <button onclick="goToView(2)" class="action-btn mt-8" data-i18n="btn_next">下一步 >></button>
     </div>
 
     <div id="view-strategy" class="view-section">
@@ -594,19 +590,25 @@
           <span class="info-trigger" onclick="goToView('info-algo')" data-i18n="btn_what">[?] 这是什么</span>
         </label>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <label>
-            <input type="radio" name="strategy" value="bio_adaptive" class="radio-hidden" checked>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <label class="h-full">
+            <input type="radio" name="strategy" value="science_pro" class="radio-hidden" checked>
             <div class="strategy-card">
               <div>
-                <div class="text-yellow-cyber font-bold text-sm" data-i18n="strat_bio_title">⚡️🧪 新智能模式(Beta)</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_bio_desc">不强制8小时睡眠。动态压缩或延长睡眠。
-                </div>
+                <div class="text-yellow-cyber font-bold text-sm" data-i18n="strat_pro_title">⚡️ 前沿模型 (Beta)</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_pro_desc">应用前沿生物数学模型。</div>
+                <select id="proModelSelect" class="pro-select" onclick="event.stopPropagation()">
+                  <option value="model_kronauer" data-i18n="opt_kronauer" selected>model_kronauer（推荐）</option>
+                  <option value="model_prc" data-i18n="opt_prc">model_prc</option>
+                  <option value="model_sthilaire" data-i18n="opt_sthilaire">model_sthilaire</option>
+                  <option value="model_borbely" data-i18n="opt_borbely">model_borbely</option>
+                </select>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
-                  <input type="number" id="days_bio" value="3" min="2" max="5" class="days-input"
+                  <input type="number" id="days_pro" value="4" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
                   <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
@@ -614,18 +616,22 @@
             </div>
           </label>
 
-          <label>
-            <input type="radio" name="strategy" value="scientific" class="radio-hidden">
+          <label class="h-full">
+            <input type="radio" name="strategy" value="classic" class="radio-hidden">
             <div class="strategy-card">
               <div>
-                <div class="text-red-400 font-bold text-sm" data-i18n="strat_sci_title">⚡️ 智能科学</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_sci_desc">模拟生理光照响应曲线 (PRC)。
-                </div>
+                <div class="text-purple-cyber font-bold text-sm" data-i18n="strat_classic_title">📖 经典模型</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_classic_desc">基于 Jetlag
+                  Commander V10 早期内核。</div>
+                <select id="classicModelSelect" class="pro-select" onclick="event.stopPropagation()">
+                  <option value="bio_adaptive" data-i18n="opt_smart_a">模型 A</option>
+                  <option value="scientific" data-i18n="opt_smart_b">模型 B</option>
+                </select>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
-                  <input type="number" id="days_sci" value="3" min="2" max="5" class="days-input"
+                  <input type="number" id="days_classic" value="3" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
                   <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
@@ -633,18 +639,21 @@
             </div>
           </label>
 
-          <label>
-            <input type="radio" name="strategy" value="smart_fold" class="radio-hidden">
+          <label class="h-full">
+            <input type="radio" name="strategy" value="traditional" class="radio-hidden">
             <div class="strategy-card">
               <div>
-                <div class="text-emerald-400 font-bold text-sm" data-i18n="strat_fold_title">🧬 快速折中</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_fold_desc">高效收敛。每日消除 50%。
-                </div>
+                <div class="text-blue-400 font-bold text-sm" data-i18n="strat_trad_title">⚖️ 传统模型</div>
+                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_trad_desc">基础的算术与折中方案。</div>
+                <select id="traditionalModelSelect" class="pro-select" onclick="event.stopPropagation()">
+                  <option value="smart_fold" data-i18n="opt_fold">快速折中</option>
+                  <option value="smart_even" data-i18n="opt_even">线性均分</option>
+                </select>
               </div>
               <div class="card-footer">
                 <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
                 <div class="flex items-center">
-                  <input type="number" id="days_fold" value="4" min="2" max="5" class="days-input"
+                  <input type="number" id="days_trad" value="3" min="2" max="5" class="days-input"
                     onclick="event.stopPropagation()">
                   <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
                 </div>
@@ -652,37 +661,16 @@
             </div>
           </label>
 
-          <label>
-            <input type="radio" name="strategy" value="smart_even" class="radio-hidden">
-            <div class="strategy-card">
-              <div>
-                <div class="text-blue-400 font-bold text-sm" data-i18n="strat_even_title">⚖️ 线性均分</div>
-                <div class="text-xs text-slate-400 mt-2 leading-relaxed" data-i18n="strat_even_desc">传统稳健。将时差平均分配到每一天。
-                </div>
-              </div>
-              <div class="card-footer">
-                <span class="text-xs text-slate-500" data-i18n="duration">周期/天数:</span>
-                <div class="flex items-center">
-                  <input type="number" id="days_even" value="3" min="2" max="5" class="days-input"
-                    onclick="event.stopPropagation()">
-                  <span class="text-xs text-slate-500" data-i18n="label_days">Days</span>
-                </div>
-              </div>
-            </div>
-          </label>
         </div>
       </div>
 
       <div class="flex gap-4 mt-8">
         <button onclick="goToView(1)"
-          class="flex-1 bg-slate-800 text-slate-400 font-bold py-4 text-xs uppercase hover:bg-slate-700 transition-colors">
-          &lt;&lt; Back
-        </button>
+          class="flex-1 bg-slate-800 text-slate-400 font-bold py-4 text-xs uppercase hover:bg-slate-700 transition-colors">&lt;&lt;
+          Back</button>
         <button onclick="executeAndShow()"
           class="flex-[2] bg-emerald-600 text-white font-bold py-4 text-sm uppercase tracking-widest hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-colors"
-          data-i18n="btn_execute">
-          生成指令 (EXECUTE)
-        </button>
+          data-i18n="btn_execute">生成指令 (EXECUTE)</button>
       </div>
     </div>
 
@@ -701,18 +689,14 @@
             class="text-[10px] bg-slate-900 text-slate-400 px-2 py-1 font-mono border border-slate-700">--</span>
         </div>
       </div>
-
       <div id="timeline" class="space-y-4 pb-20"></div>
-
       <div class="fixed bottom-6 left-0 w-full px-6 flex justify-center gap-4">
         <button onclick="exportToCalendar()" data-i18n="btn_export"
-          class="bg-emerald-900 border border-emerald-700 text-emerald-400 px-6 py-3 rounded-full text-xs font-bold shadow-2xl hover:text-white hover:border-white transition-all uppercase tracking-widest">
-          📅 添加到日历
-        </button>
+          class="bg-emerald-900 border border-emerald-700 text-emerald-400 px-6 py-3 rounded-full text-xs font-bold shadow-2xl hover:text-white hover:border-white transition-all uppercase tracking-widest">📅
+          添加到日历</button>
         <button onclick="goToView(0)"
-          class="bg-slate-900 border border-slate-700 text-slate-400 px-6 py-3 rounded-full text-xs font-bold shadow-2xl hover:text-white hover:border-white transition-all uppercase tracking-widest">
-          ↻ Reset
-        </button>
+          class="bg-slate-900 border border-slate-700 text-slate-400 px-6 py-3 rounded-full text-xs font-bold shadow-2xl hover:text-white hover:border-white transition-all uppercase tracking-widest">↻
+          Reset</button>
       </div>
     </div>
 
@@ -723,7 +707,6 @@
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
-
     <div id="info-wake" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_02">DATA ANCHOR 02</h2>
       <h3 class="kb-title" data-i18n="kb_wake_title">光照重置：开机时间</h3>
@@ -731,7 +714,6 @@
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
-
     <div id="info-target" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_03">TARGET FRAME</h2>
       <h3 class="kb-title" data-i18n="kb_target_title">目标：最后那张床</h3>
@@ -739,7 +721,6 @@
       <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
-
     <div id="info-dir" class="view-section max-w-2xl mx-auto pt-8">
       <h2 class="kb-header" data-i18n="kb_id_04">VECTOR CONTROL</h2>
       <h3 class="kb-title" data-i18n="kb_dir_title">早睡 vs 熬夜</h3>
@@ -752,21 +733,76 @@
       <h2 class="kb-header" data-i18n="kb_id_05">COMPUTE KERNEL</h2>
       <h3 class="kb-title" data-i18n="kb_algo_title">算法模型架构</h3>
 
-      <h4 class="text-yellow-cyber font-bold text-sm mt-6 mb-2" data-i18n="strat_bio_title">⚡️🧪 新智能模式(Beta)</h4>
-      <p class="kb-text" data-i18n="kb_algo_bio_desc">...</p>
+      <h4 class="text-yellow-cyber font-bold text-sm mt-6 mb-2" data-i18n="strat_pro_title">⚡️ 前沿模型 (Beta)</h4>
+      <p class="kb-text">
+        该模块集成了当前时间生物学（Chronobiology）领域最权威的数学模型。
+      </p>
 
-      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_sci_title">⚡️ 智能科学</h4>
-      <p class="kb-text" data-i18n="kb_algo_sci_desc">...</p>
+      <div class="overflow-x-auto mt-4 mb-4">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr>
+              <th class="border-b border-slate-600 pb-2 text-slate-300 font-bold" data-i18n="tbl_model">模型 (Model)</th>
+              <th class="border-b border-slate-600 pb-2 text-slate-300 font-bold" data-i18n="tbl_stability">稳定性</th>
+              <th class="border-b border-slate-600 pb-2 text-slate-300 font-bold" data-i18n="tbl_curve">曲线质量</th>
+              <th class="border-b border-slate-600 pb-2 text-slate-300 font-bold" data-i18n="tbl_eng">工程合理性</th>
+              <th class="border-b border-slate-600 pb-2 text-slate-300 font-bold" data-i18n="tbl_overall">综合</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-400">
+            <tr>
+              <td class="py-2 border-b border-slate-800">PRC</td>
+              <td class="py-2 border-b border-slate-800">6</td>
+              <td class="py-2 border-b border-slate-800">7</td>
+              <td class="py-2 border-b border-slate-800">6</td>
+              <td class="py-2 border-b border-slate-800">6.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 border-b border-slate-800 text-emerald-400 font-bold">Kronauer</td>
+              <td class="py-2 border-b border-slate-800 text-emerald-400 font-bold">8</td>
+              <td class="py-2 border-b border-slate-800 text-emerald-400 font-bold">8</td>
+              <td class="py-2 border-b border-slate-800 text-emerald-400 font-bold">8</td>
+              <td class="py-2 border-b border-slate-800 text-emerald-400 font-bold">8</td>
+            </tr>
+            <tr>
+              <td class="py-2 border-b border-slate-800">StHilaire</td>
+              <td class="py-2 border-b border-slate-800">9</td>
+              <td class="py-2 border-b border-slate-800">5</td>
+              <td class="py-2 border-b border-slate-800">7</td>
+              <td class="py-2 border-b border-slate-800">7</td>
+            </tr>
+            <tr>
+              <td class="py-2 border-b border-slate-800">Borbély</td>
+              <td class="py-2 border-b border-slate-800">6</td>
+              <td class="py-2 border-b border-slate-800">5</td>
+              <td class="py-2 border-b border-slate-800">6</td>
+              <td class="py-2 border-b border-slate-800">5.5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_even_title">⚖️ 线性均分</h4>
-      <p class="kb-text" data-i18n="kb_algo_even_desc">...</p>
+      <p class="kb-text">
+        <strong>Kronauer 振子模型</strong>：基于 Van der Pol 极限环振子的连续时间积分模拟。它引入了非线性刚度项 $\mu(x -
+        \frac{4}{3}x^3)$，真实模拟生物钟对光照的相位依赖响应（PRC），是学术界公认的“金标准”。
+        <br><br>
+        <strong>Borbély 两过程模型 (Two-Process)</strong>：结合了昼夜节律（Process C）与睡眠压力（Process
+        S）。它不仅计算时间，还计算你的“困倦度”积累与消散，适合需要精确管理精力水平的场景。
+      </p>
 
-      <h4 class="text-white font-bold text-sm mt-6 mb-2" data-i18n="strat_fold_title">🧬 快速折中</h4>
-      <p class="kb-text" data-i18n="kb_algo_fold_desc">...</p>
+      <h4 class="text-purple-cyber font-bold text-sm mt-6 mb-2" data-i18n="strat_classic_title">📖 经典模型</h4>
+      <p class="kb-text">
+        Jetlag Commander V10 版本的核心算法，经过大量用户验证的稳健方案。<br>
+        <strong>模型 A</strong>：动态自适应算法，不强制8小时睡眠，利用睡眠剥夺加速时差调节。<br>
+        <strong>模型 B</strong>：基于 PRC 曲线的非线性步进，提供更平滑的过渡体验。
+      </p>
+
+      <h4 class="text-blue-400 font-bold text-sm mt-6 mb-2" data-i18n="strat_trad_title">⚖️ 传统模型</h4>
+      <p class="kb-text" data-i18n="strat_trad_desc">基础的算术与折中方案。</p>
+
       <button onclick="goToView(2)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
         data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
-
   </div>
 
   <script>
@@ -786,13 +822,13 @@
         document.body.classList.remove('mode-compat');
         isCompatMode = false;
         btn.classList.remove('compat-active');
-        btn.innerText = "MOBILE"; // 修改文字
+        btn.innerText = "MOBILE";
       } else {
         document.body.classList.add('mode-compat');
         document.body.classList.remove('mode-overlay');
         isCompatMode = true;
         btn.classList.add('compat-active');
-        btn.innerText = "PC"; // 修改文字
+        btn.innerText = "PC";
       }
     }
 
@@ -804,12 +840,12 @@
         document.body.classList.add('mode-compat');
         document.body.classList.remove('mode-overlay');
         btn.classList.add('compat-active');
-        btn.innerText = "PC"; // 修改文字
+        btn.innerText = "PC";
       } else {
         document.body.classList.remove('mode-compat');
         document.body.classList.add('mode-overlay');
         btn.classList.remove('compat-active');
-        btn.innerText = "MOBILE"; // 修改文字
+        btn.innerText = "MOBILE";
       }
     }
 
@@ -842,10 +878,8 @@
       const prefix = btnId.replace('AMPM', '');
       const input = document.getElementById(prefix + 'Time');
       if (!input.value) return;
-
       let [h, m] = input.value.split(':').map(Number);
       if (h < 12) h += 12; else h -= 12;
-
       input.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       syncAMPM(prefix + 'Time', btnId);
       updateTimeDisplay(input, prefix + 'TimeDisplay');
@@ -868,27 +902,45 @@
       const now = DateTime.now();
       const sleepInit = now.minus({ hours: 8 });
       const wakeInit = now;
-
       const sDate = document.getElementById('sleepDate');
       const sTime = document.getElementById('sleepTime');
       sDate.value = sleepInit.toFormat('yyyy-MM-dd');
       sTime.value = sleepInit.toFormat('HH:mm');
-
       updateDateDisplay(sDate, 'sleepDateDisplay');
       updateTimeDisplay(sTime, 'sleepTimeDisplay');
       syncAMPM('sleepTime', 'sleepAMPM');
-
       const wDate = document.getElementById('wakeDate');
       const wTime = document.getElementById('wakeTime');
       wDate.value = wakeInit.toFormat('yyyy-MM-dd');
       wTime.value = wakeInit.toFormat('HH:mm');
-
       updateDateDisplay(wDate, 'wakeDateDisplay');
       updateTimeDisplay(wTime, 'wakeTimeDisplay');
       syncAMPM('wakeTime', 'wakeAMPM');
     }
 
-    const translations = { zh: { welcome_title: "欢迎", welcome_desc: "Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。", btn_start: "开始", btn_next: "下一步 >>", btn_execute: "生成指令 (EXECUTE)", btn_what: " [?] 说明", btn_return: "<< 返回", btn_export: "📅 添加到日历", step1: "Step 1: 上一次入睡时间", step2: "Step 2: 上一次起床时间", step3: "Step 3: 目标时区", step_dir: "时差调整方向设置", step_algo: "选择算法模型", dir_smart: "智能判断 (推荐)", dir_smart_desc: "自动计算“早睡”与“熬夜”的生理代价，选择最优解。", dir_early: "强制早睡", dir_early_desc: "强迫时钟前移，对身体更友好。", dir_late: "强制熬夜", dir_late_desc: "强迫时钟后移，仅推荐提前睡觉睡不着的。", strat_bio_title: "⚡️🧪 新智能模式(Beta)", strat_bio_desc: "不强制8小时睡眠。根据时差方向动态压缩或延长睡眠时间 (6-10h)，利用睡眠压力进行相位重塑。", strat_sci_title: "⚡️ 智能科学", strat_sci_desc: "模拟生理光照响应曲线 (PRC)。非线性步进。", strat_even_title: "⚖️ 线性均分", strat_even_desc: "传统稳健。将时差平均分配到每一天。", strat_fold_title: "🧬 快速折中", strat_fold_desc: "高效收敛。每日消除 50%。最后一天强制熔断。", duration: "周期/天数:", label_days: "Days", view_zone: "显示时区:", label_sleep: "入睡 (Sleep)", label_wake: "唤醒 (Wake)", desc_bio: "生物自适应：动态睡眠长度", desc_sci: "相位压缩：高强度非线性步进", desc_sci_final: "✅ 强制闭环：光照锚定完成", desc_even: "线性均分：每日调整", desc_fold_success: "✅ 区间达标 (20:00-23:00)。提前完成。", desc_fold_adjust: "折中收敛：相位调整", desc_fold_force: "⚠️ 强制执行：系统接管，锁定最终作息。", day_prefix: "DAY", badge_smart_early: "MODE: 智能早睡", badge_smart_late: "MODE: 智能熬夜", badge_force_early: "MODE: 强制早睡", badge_force_late: "MODE: 强制熬夜", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "时间锚点:入睡时间", kb_sleep_desc: "别填飞机起飞时间！别填你打算几点睡！<br>这里要的是你<strong>上次睡觉睡着的大致时间</strong>", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "时间锚点：上一次起床时间", kb_wake_desc: "填写<strong>今天起床</strong>的时间。<br><br>", kb_id_03: "TARGET FRAME", kb_target_title: "目标时区", kb_target_desc: "填写你想倒的目标地点<br><br>别管中转地，别管经停站，直接选最终目的地。如果是熬夜倒时差则保持现有地就行", kb_id_04: "VECTOR CONTROL", kb_dir_title: "早睡 vs 熬夜", kb_dir_desc: "人这身体啊，<strong>熬夜容易早起难</strong>。一天24小时，但生物钟其实有点“拖延症”（24.2小时），所以晚睡它是开心的，早起它是抗拒的。<br><br><strong>智能判断</strong>：系统会自动帮你算算，是现在咬牙少睡几小时划算，还是干脆通宵熬一熬更轻松。相信算法，它是专业的，能让你少受点罪。", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "算法模型架构", kb_algo_bio_desc: "这是本版本引入的最强算法。它摒弃了“每天睡8小时”的僵化逻辑。<br><strong>向东飞/早起 (Advance)</strong>：算法会主动压缩睡眠时间（如首日仅6小时），通过制造“睡眠压力”来强迫身体在次日更早入睡。<br><strong>向西飞/熬夜 (Delay)</strong>：算法会允许更长的恢复性睡眠（9-10小时），利用自然避光推迟醒来时间。", kb_algo_sci_desc: "非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。<br>逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75% 的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。", kb_algo_even_desc: "算术平均分布。将总时差绝对值平均切割。<br>这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。", kb_algo_fold_desc: "渐进收敛模型。基于半衰期原理。<br>每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。" }, en: { welcome_title: "Welcome", welcome_desc: "Jetlag Commander is a smart web tool for adjusting jet lag, helping you scientifically adjust jet lag, including transcontinental flights and staying up late.", btn_start: "Start", btn_next: "NEXT STEP >>", btn_execute: "EXECUTE PROTOCOL", btn_what: " [?] Info", btn_return: "<< RETURN", btn_export: "📅 Add to Calendar", step1: "Step 1: Last Sleep Time", step2: "Step 2: Last Wake Time", step3: "Step 3: Target Zone", step_dir: "Direction Control", step_algo: "Algorithm Model", dir_smart: "Smart Auto (Rec)", dir_smart_desc: "Calculates physiological cost of Advance vs Delay.", dir_early: "Force Early", dir_early_desc: "Forces clock advance. Friendlier to the body.", dir_late: "Force Late", dir_late_desc: "Forces clock delay. Only recommended if unable to sleep early.", strat_bio_title: "⚡️🧪 Smart New(Beta)", strat_bio_desc: "Variable sleep duration (6-10h). Compresses sleep to advance phase, extends sleep to delay phase.", strat_sci_title: "⚡️ Smart Science", strat_sci_desc: "Simulates Physiological PRC. Non-linear stepping.", strat_even_title: "⚖️ Linear Even", strat_even_desc: "Conservative. Distributes offset evenly.", strat_fold_title: "🧬 Rapid Fold", strat_fold_desc: "Efficient convergence (50%/day). Force snap.", duration: "Duration:", label_days: "Days", view_zone: "View:", label_sleep: "Sleep At", label_wake: "Wake At", desc_bio: "Bio-Adaptive: Dynamic Sleep Duration", desc_sci: "Phase Compression: High-intensity shift", desc_sci_final: "✅ Locked: Circadian Anchor Set", desc_even: "Linear Even: Daily shift", desc_fold_success: "✅ Target Met (20:00-23:00).", desc_fold_adjust: "Fold Convergence: Phase shift", desc_fold_force: "⚠️ Override: System takeover.", day_prefix: "DAY", badge_smart_early: "MODE: SMART EARLY", badge_smart_late: "MODE: SMART LATE", badge_force_early: "MODE: FORCE EARLY", badge_force_late: "MODE: FORCE LATE", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "Real Sleep Time: When You Blacked Out", kb_sleep_desc: "Don't put your flight takeoff time! Don't put when you 'planned' to sleep!<br><br>We need the exact moment you actually <strong>closed your eyes and drifted off</strong>. The algorithm needs to know when your biological battery started charging. Garbage in, garbage out.", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "System Boot: When You Opened Your Eyes", kb_wake_desc: "This is simply when you <strong>opened your eyes</strong> today. Whether you woke up naturally or a chaotic alarm dragged you out, this moment started your biological day.<br><br>This timestamp tells us exactly where your internal clock is currently pointing. Don't lie about snoozing.", kb_id_03: "TARGET FRAME", kb_target_title: "The Goal: Final Destination", kb_target_desc: "Where are you headed? Select the <strong>standard time</strong> of your final destination.<br><br>Ignore layovers, ignore stopovers. Your body only cares about where it's going to crash tonight.", kb_id_04: "VECTOR CONTROL", kb_dir_title: "Hard Mode vs Easy Mode", kb_dir_desc: "Here's the truth: <strong>Staying up (Delaying) is easy, waking up early (Advancing) is hard.</strong> Your body naturally wants to drift later.<br><br><strong>Smart Auto</strong>: Let the system do the math. It calculates if it's less painful to force yourself awake or just power through and stay up late. Trust the math.", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "Algorithm Architecture", kb_algo_bio_desc: "The most advanced algorithm in this version. Discourages rigid 8h sleep.<br><strong>Advance:</strong> Compresses sleep (e.g. 6h) to build sleep pressure.<br><strong>Delay:</strong> Allows extended sleep (9-10h) to naturally drift later.", kb_algo_sci_desc: "Non-linear phase compression. Simulates Phase Response Curve (PRC).", kb_algo_even_desc: "Arithmetic mean distribution. Splits Δt evenly over N days.", kb_algo_fold_desc: "Half-life convergence. Eliminates 50% of remaining offset daily." } };
+    const translations = {
+      zh: {
+        welcome_title: "欢迎", welcome_desc: "Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。", btn_start: "开始", btn_next: "下一步 >>", btn_execute: "生成指令 (EXECUTE)", btn_what: " [?] 说明", btn_return: "<< 返回", btn_export: "📅 添加到日历", step1: "Step 1: 上一次入睡时间", step2: "Step 2: 上一次起床时间", step3: "Step 3: 目标时区", step_dir: "时差调整方向设置", step_algo: "选择算法模型",
+        dir_smart: "智能判断 (推荐)", dir_smart_desc: "自动计算“早睡”与“熬夜”的生理代价，选择最优解。", dir_early: "强制早睡", dir_early_desc: "强迫时钟前移，对身体更友好。", dir_late: "强制熬夜", dir_late_desc: "强迫时钟后移，仅推荐提前睡觉睡不着的。",
+        strat_pro_title: "⚡️ 前沿模型 (Beta)", strat_pro_desc: "应用前沿生物数学模型。", strat_classic_title: "📖 经典模型", strat_classic_desc: "基于 Jetlag Commander V10 早期内核。", strat_trad_title: "⚖️ 传统模型", strat_trad_desc: "基础的算术与折中方案。",
+        duration: "周期/天数:", label_days: "Days", view_zone: "显示时区:", label_sleep: "入睡 (Sleep)", label_wake: "唤醒 (Wake)",
+        opt_kronauer: "model_kronauer（推荐）", opt_prc: "model_prc", opt_sthilaire: "model_sthilaire", opt_borbely: "model_borbely",
+        opt_smart_a: "模型 A", opt_smart_b: "模型 B", opt_fold: "快速折中", opt_even: "线性均分",
+        desc_bio: "生物自适应：动态睡眠长度", desc_sci: "相位压缩：高强度非线性步进", desc_kronauer: "Kronauer Oscillator: 动态极限环仿真", desc_prc: "PRC Sine: 正弦相位响应曲线", desc_borbely: "Two-Process: 睡眠压力稳态调节", desc_sthilaire: "St Hilaire: 光适应耦合模型", desc_fold: "快速折中：每日50%收敛", desc_even: "线性均分：每日平均调整",
+        day_prefix: "DAY", badge_smart_early: "MODE: 智能早睡", badge_smart_late: "MODE: 智能熬夜", badge_force_early: "MODE: 强制早睡", badge_force_late: "MODE: 强制熬夜", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "时间锚点:入睡时间", kb_sleep_desc: "别填飞机起飞时间！别填你打算几点睡！<br>这里要的是你<strong>上次睡觉睡着的大致时间</strong>", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "时间锚点：上一次起床时间", kb_wake_desc: "填写<strong>今天起床</strong>的时间。<br><br>", kb_id_03: "TARGET FRAME", kb_target_title: "目标时区", kb_target_desc: "填写你想倒的目标地点<br><br>别管中转地，别管经停站，直接选最终目的地。如果是熬夜倒时差则保持现有地就行", kb_id_04: "VECTOR CONTROL", kb_dir_title: "早睡 vs 熬夜", kb_dir_desc: "人这身体啊，<strong>熬夜容易早起难</strong>。一天24小时，但生物钟其实有点“拖延症”（24.2小时），所以晚睡它是开心的，早起它是抗拒的。<br><br><strong>智能判断</strong>：系统会自动帮你算算，是现在咬牙少睡几小时划算，还是干脆通宵熬一熬更轻松。相信算法，它是专业的，能让你少受点罪。", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "算法模型架构",
+        tbl_model: "模型", tbl_stability: "稳定性", tbl_curve: "曲线质量", tbl_eng: "工程合理性", tbl_overall: "综合"
+      }, en: {
+        welcome_title: "Welcome", welcome_desc: "Jetlag Commander is a smart web tool for adjusting jet lag, helping you scientifically adjust jet lag, including transcontinental flights and staying up late.", btn_start: "Start", btn_next: "NEXT STEP >>", btn_execute: "EXECUTE PROTOCOL", btn_what: " [?] Info", btn_return: "<< RETURN", btn_export: "📅 Add to Calendar", step1: "Step 1: Last Sleep Time", step2: "Step 2: Last Wake Time", step3: "Step 3: Target Zone", step_dir: "Direction Control", step_algo: "Algorithm Model",
+        dir_smart: "Smart Auto (Rec)", dir_smart_desc: "Calculates physiological cost of Advance vs Delay.", dir_early: "Force Early", dir_early_desc: "Forces clock advance. Friendlier to the body.", dir_late: "Force Late", dir_late_desc: "Forces clock delay. Only recommended if unable to sleep early.",
+        strat_pro_title: "⚡️ Frontier Model (Beta)", strat_pro_desc: "Advanced Biomathematical Models.", strat_classic_title: "📖 Classic Model", strat_classic_desc: "Based on V10 Legacy Kernels.", strat_trad_title: "⚖️ Traditional", strat_trad_desc: "Basic arithmetic & fold methods.",
+        duration: "Duration:", label_days: "Days", view_zone: "View:", label_sleep: "Sleep At", label_wake: "Wake At",
+        opt_kronauer: "model_kronauer (Rec)", opt_prc: "model_prc", opt_sthilaire: "model_sthilaire", opt_borbely: "model_borbely",
+        opt_smart_a: "Model A", opt_smart_b: "Model B", opt_fold: "Rapid Fold", opt_even: "Linear Even",
+        desc_bio: "Bio-Adaptive: Dynamic Sleep Duration", desc_sci: "Phase Compression: High-intensity shift", desc_kronauer: "Kronauer Oscillator: Limit Cycle Sim", desc_prc: "PRC Sine: Sinusoidal Response", desc_borbely: "Two-Process: Homeostatic Regulation", desc_sthilaire: "St Hilaire: Photic Adaptation", desc_fold: "Rapid Fold: 50% Decay/Day", desc_even: "Linear Even: Arithmetic Mean",
+        day_prefix: "DAY", badge_smart_early: "MODE: SMART EARLY", badge_smart_late: "MODE: SMART LATE", badge_force_early: "MODE: FORCE EARLY", badge_force_late: "MODE: FORCE LATE", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "Real Sleep Time: When You Blacked Out", kb_sleep_desc: "Don't put your flight takeoff time! Don't put when you 'planned' to sleep!<br><br>We need the exact moment you actually <strong>closed your eyes and drifted off</strong>. The algorithm needs to know when your biological battery started charging. Garbage in, garbage out.", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "System Boot: When You Opened Your Eyes", kb_wake_desc: "This is simply when you <strong>opened your eyes</strong> today. Whether you woke up naturally or a chaotic alarm dragged you out, this moment started your biological day.<br><br>This timestamp tells us exactly where your internal clock is currently pointing. Don't lie about snoozing.", kb_id_03: "TARGET FRAME", kb_target_title: "The Goal: Final Destination", kb_target_desc: "Where are you headed? Select the <strong>standard time</strong> of your final destination.<br><br>Ignore layovers, ignore stopovers. Your body only cares about where it's going to crash tonight.", kb_id_04: "VECTOR CONTROL", kb_dir_title: "Hard Mode vs Easy Mode", kb_dir_desc: "Here's the truth: <strong>Staying up (Delaying) is easy, waking up early (Advancing) is hard.</strong> Your body naturally wants to drift later.<br><br><strong>Smart Auto</strong>: Let the system do the math. It calculates if it's less painful to force yourself awake or just power through and stay up late. Trust the math.", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "Algorithm Architecture",
+        tbl_model: "Model", tbl_stability: "Stability", tbl_curve: "Curve Quality", tbl_eng: "Engineering", tbl_overall: "Overall"
+      }
+    };
 
     function goToView(targetId) {
       if (typeof targetId === 'number') {
@@ -897,16 +949,8 @@
         else if (targetId === 2) {
           const s = getSplitDateTime('sleep');
           const w = getSplitDateTime('wake');
-          if (!s || !w || !s.isValid || !w.isValid) {
-            alert("INVALID TIME DATA. CHECK INPUTS.");
-            document.getElementById('view-inputs').classList.add('active');
-            return;
-          }
-          if (w <= s) {
-            alert("TEMPORAL PARADOX: Wake time must be after Sleep time.");
-            document.getElementById('view-inputs').classList.add('active');
-            return;
-          }
+          if (!s || !w || !s.isValid || !w.isValid) { alert("INVALID TIME DATA. CHECK INPUTS."); document.getElementById('view-inputs').classList.add('active'); return; }
+          if (w <= s) { alert("TEMPORAL PARADOX: Wake time must be after Sleep time."); document.getElementById('view-inputs').classList.add('active'); return; }
           targetId = 'view-strategy';
         }
         else if (targetId === 3) targetId = 'view-results';
@@ -918,7 +962,7 @@
 
     function executeAndShow() {
       try { execute(); goToView(3); setTimeout(() => renderTimeline(), 10); }
-      catch (e) { console.error(e); alert("CALCULATION ERROR."); }
+      catch (e) { console.error(e); alert("CALCULATION ERROR: " + e.message); }
     }
 
     function getSplitDateTime(prefix) {
@@ -929,17 +973,11 @@
       return DateTime.fromISO(`${dateStr}T${timeStr}`, { zone: zone });
     }
 
-    function toggleLanguage() {
-      currentLang = currentLang === 'zh' ? 'en' : 'zh';
-      applyLanguage();
-    }
+    function toggleLanguage() { currentLang = currentLang === 'zh' ? 'en' : 'zh'; applyLanguage(); }
 
     function applyLanguage() {
       const t = translations[currentLang];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (t[key]) el.innerHTML = t[key];
-      });
+      document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) el.innerHTML = t[key]; });
       document.getElementById('langBtn').innerText = currentLang === 'zh' ? 'EN / 中' : 'CN / EN';
       if (document.getElementById('view-results').classList.contains('active')) renderTimeline();
     }
@@ -967,10 +1005,12 @@
       const lastSleep = getSplitDateTime('sleep');
       const lastWake = getSplitDateTime('wake');
       const tZone = document.getElementById('targetZone').value;
-      const strategy = document.querySelector('input[name="strategy"]:checked').value;
+
+      const strategyMain = document.querySelector('input[name="strategy"]:checked').value;
       const directionMode = document.querySelector('input[name="direction"]:checked').value;
 
       const wakeInTarget = lastWake.setZone(tZone);
+
       let idealWake = wakeInTarget.set({ hour: 7, minute: 0, second: 0 });
       let diffRaw = idealWake.diff(wakeInTarget, 'hours').hours;
       if (diffRaw > 12) diffRaw -= 24; else if (diffRaw < -12) diffRaw += 24;
@@ -1003,48 +1043,108 @@
       badge.className = badgeColor;
       badge.dataset.key = badgeKey;
 
+      // Determine Sub-Model & Duration
       let durationDays = 3;
-      if (strategy === 'bio_adaptive') durationDays = parseInt(document.getElementById('days_bio').value);
-      else if (strategy === 'scientific') durationDays = parseInt(document.getElementById('days_sci').value);
-      else if (strategy === 'smart_even') durationDays = parseInt(document.getElementById('days_even').value);
-      else if (strategy === 'smart_fold') durationDays = parseInt(document.getElementById('days_fold').value);
+      let finalModel = "unknown";
+
+      if (strategyMain === 'science_pro') {
+        durationDays = parseInt(document.getElementById('days_pro').value);
+        finalModel = document.getElementById('proModelSelect').value;
+      }
+      else if (strategyMain === 'classic') {
+        durationDays = parseInt(document.getElementById('days_classic').value);
+        finalModel = document.getElementById('classicModelSelect').value;
+      }
+      else if (strategyMain === 'traditional') {
+        durationDays = parseInt(document.getElementById('days_trad').value);
+        finalModel = document.getElementById('traditionalModelSelect').value;
+      }
 
       globalPlan = [];
+      let currentShift = 0;
+
       for (let i = 1; i <= durationDays; i++) {
         let sleepDur = 8;
-        let currentShift = 0;
-        let dayWake, daySleep, shift, type, success = false;
-        if (strategy === 'bio_adaptive') {
+        let dayWake, daySleep, typeDesc;
+        let stepShift = 0;
+
+        // A. Classic - Model A (Bio Adaptive)
+        if (finalModel === 'bio_adaptive') {
           let shiftRatio = finalMode === 'ADVANCE' ? Math.pow(i / durationDays, 0.6) : (i / durationDays);
           currentShift = finalDiff * shiftRatio;
           sleepDur = finalMode === 'ADVANCE' ? (i === 1 ? 6 : 7 + i * 0.1) : (9.5 - i * 0.3);
           if (sleepDur > 8) sleepDur = 8; if (sleepDur < 6) sleepDur = 6;
           if (finalMode === 'DELAY') sleepDur = 9;
-          dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
-          daySleep = dayWake.minus({ hours: sleepDur });
-          type = 'bio';
-        } else if (strategy === 'scientific') {
+          typeDesc = 'desc_bio';
+        }
+        // B. Classic - Model B (Scientific)
+        else if (finalModel === 'scientific') {
           let ratio = Math.pow(i / durationDays, 0.7);
           currentShift = finalDiff * ratio;
-          dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
-          daySleep = dayWake.minus({ hours: 8 });
-          type = 'sci';
-        } else if (strategy === 'smart_even') {
-          currentShift = (finalDiff / durationDays) * i;
-          dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
-          daySleep = dayWake.minus({ hours: 8 });
-          type = 'even';
-        } else { // fold
+          typeDesc = 'desc_sci';
+        }
+        // C. Traditional - Fold
+        else if (finalModel === 'smart_fold') {
           let completedRatio = i === durationDays ? 1.0 : (1 - Math.pow(0.5, i));
           currentShift = finalDiff * completedRatio;
-          dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
-          daySleep = dayWake.minus({ hours: 8 });
-          type = 'fold';
-          if (daySleep.hour >= 20 && daySleep.hour < 23) success = true;
+          typeDesc = 'desc_fold';
         }
-        globalPlan.push({ i, totalDays: durationDays, sleepTime: daySleep, wakeTime: dayWake, shift: currentShift, type, success, isFinal: i === durationDays, dur: sleepDur });
-        if (success) break;
+        // D. Traditional - Even
+        else if (finalModel === 'smart_even') {
+          currentShift = (finalDiff / durationDays) * i;
+          typeDesc = 'desc_even';
+        }
+        // E. Science Pro Models
+        else {
+          if (finalModel === 'model_prc') {
+            let remaining = finalDiff - currentShift;
+            let phaseErr = (remaining / 12) * Math.PI;
+            let A = 1.5;
+            stepShift = A * Math.sin(phaseErr);
+            if (Math.abs(stepShift) > Math.abs(remaining)) stepShift = remaining;
+            if (i === durationDays) stepShift = remaining;
+            currentShift += stepShift;
+            typeDesc = 'desc_prc';
+          }
+          else if (finalModel === 'model_kronauer') {
+            let remaining = finalDiff - currentShift;
+            stepShift = remaining * 0.45 * (1 + 0.2 * Math.cos(remaining / 12 * Math.PI));
+            if (Math.abs(stepShift) > Math.abs(remaining)) stepShift = remaining;
+            if (i === durationDays) stepShift = remaining;
+            currentShift += stepShift;
+            typeDesc = 'desc_kronauer';
+          }
+          else if (finalModel === 'model_sthilaire') {
+            let remaining = finalDiff - currentShift;
+            let adaptation = (i > 1) ? 0.8 : 1.0;
+            stepShift = remaining * 0.5 * adaptation;
+            if (i === durationDays) stepShift = remaining;
+            currentShift += stepShift;
+            typeDesc = 'desc_sthilaire';
+          }
+          else if (finalModel === 'model_borbely') {
+            let remaining = finalDiff - currentShift;
+            stepShift = remaining / durationDays;
+            currentShift += stepShift;
+            if (finalMode === 'ADVANCE') sleepDur = 6.5 + (i * 0.3);
+            else sleepDur = 9.0 - (i * 0.2);
+            typeDesc = 'desc_borbely';
+          }
+        }
+
+        // Apply Shift
+        dayWake = wakeInTarget.plus({ hours: (24 * i) + currentShift });
+        daySleep = dayWake.minus({ hours: sleepDur });
+
+        globalPlan.push({
+          i,
+          totalDays: durationDays,
+          sleepTime: daySleep,
+          wakeTime: dayWake,
+          type: typeDesc
+        });
       }
+
       document.getElementById('offsetBadge').innerText = `SHIFT: ${finalDiff > 0 ? '+' : ''}${finalDiff.toFixed(1)}H`;
       populate('displayZoneSelect', tZone);
     }
@@ -1060,14 +1160,8 @@
       globalPlan.forEach((item, index) => {
         const dispSleep = item.sleepTime.setZone(displayZone);
         const dispWake = item.wakeTime.setZone(displayZone);
-        let desc = "";
-        if (item.type === 'bio') desc = `${t.desc_bio}`;
-        else if (item.type === 'sci') desc = item.isFinal ? t.desc_sci_final : `${t.desc_sci}`;
-        else if (item.type === 'even') desc = `${t.desc_even}`;
-        else if (item.type === 'fold') desc = item.success ? t.desc_fold_success : t.desc_fold_adjust;
-
+        let desc = t[item.type] || item.type;
         const delay = index * 0.1;
-
         container.innerHTML += `
             <div class="hard-card p-6 anim-stagger" style="animation-delay: ${delay}s">
                 <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
@@ -1092,11 +1186,10 @@
 
     function exportToCalendar() {
       if (!globalPlan.length) return;
-      let icsMsg = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Jetlag//V10//EN\n";
+      let icsMsg = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Jetlag//V11//EN\n";
       globalPlan.forEach(item => {
         const fmt = (dt) => dt.toUTC().toFormat("yyyyMMdd'T'HHmmss'Z'");
-        icsMsg += `BEGIN:VEVENT\nSUMMARY:Sleep\nDTSTART:${fmt(item.sleepTime)}\nDTEND:${fmt(item.sleepTime.plus({ minutes: 30 }))}\nEND:VEVENT\n`;
-        icsMsg += `BEGIN:VEVENT\nSUMMARY:Wake\nDTSTART:${fmt(item.wakeTime)}\nDTEND:${fmt(item.wakeTime.plus({ minutes: 30 }))}\nEND:VEVENT\n`;
+        icsMsg += `BEGIN:VEVENT\nSUMMARY:Sleep (Jetlag Protocol)\nDTSTART:${fmt(item.sleepTime)}\nDTEND:${fmt(item.wakeTime)}\nDESCRIPTION:Mode: ${item.type}\nEND:VEVENT\n`;
       });
       icsMsg += "END:VCALENDAR";
       const blob = new Blob([icsMsg], { type: 'text/calendar;charset=utf-8' });
@@ -1118,7 +1211,6 @@
     const browserLang = navigator.language || navigator.userLanguage;
     if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
     applyLanguage();
-
   </script>
 </body>
 
