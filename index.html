@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>JETLAG COMMANDER // V10.11.0-Anim</title>
+  <title>JETLAG COMMANDER // V10.11.1 by Louie Tang</title>
   <script src="lib/tailwindcss.js"></script>
   <script src="lib/luxon.min.js"></script>
   <style>
@@ -19,7 +19,8 @@
     }
 
     body {
-      font-family: 'JetBrains Mono', monospace;
+      /* 修正 Windows 下中文显示宋体的问题，优先调用微软雅黑，不影响英文字体风格 */
+      font-family: 'JetBrains Mono', "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
       background-color: #020617;
       color: #e2e8f0;
       overflow-x: hidden;
@@ -36,7 +37,6 @@
        ANIMATIONS (NEW)
        ----------------------- */
 
-    /* 1. View Entry Animation (Fade In Up) */
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -49,7 +49,6 @@
       }
     }
 
-    /* 2. Button Pulse (Breathing Glow) */
     @keyframes cyberPulse {
       0% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
@@ -64,7 +63,6 @@
       }
     }
 
-    /* 3. Card Hover Lift */
     .strategy-card,
     .input-stack,
     .dir-btn {
@@ -90,7 +88,6 @@
       cursor: pointer;
     }
 
-    /* SCENARIO A: MOBILE (Overlay Mode) */
     body.mode-overlay .input-stack .display-layer {
       position: absolute;
       top: 0;
@@ -115,13 +112,11 @@
       width: 100%;
       height: 100%;
       opacity: 0;
-      /* Transparent */
       z-index: 10;
       cursor: pointer;
       border: none;
     }
 
-    /* SCENARIO B: DESKTOP (Compatibility Mode) */
     body.mode-compat .input-stack .display-layer {
       display: none !important;
     }
@@ -131,7 +126,6 @@
       width: 100%;
       height: 100%;
       opacity: 1 !important;
-      /* Visible */
       background: #1e293b;
       color: white;
       border: none;
@@ -152,7 +146,6 @@
     /* -----------------------
        LAYOUT & UI
        ----------------------- */
-    /* Updated View Section for Animation */
     .view-section {
       display: none;
       opacity: 0;
@@ -160,7 +153,6 @@
 
     .view-section.active {
       display: block;
-      /* Trigger animation when class is added */
       animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
@@ -224,7 +216,6 @@
       box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
     }
 
-    /* Header Buttons */
     .header-btn {
       text-transform: uppercase;
       font-size: 10px;
@@ -243,7 +234,6 @@
       border-color: #10b981;
     }
 
-    /* Cards */
     .radio-hidden {
       position: absolute;
       opacity: 0;
@@ -333,7 +323,6 @@
       justify-content: space-between;
     }
 
-    /* Action Button Animation */
     .action-btn {
       width: 100%;
       background-color: #059669;
@@ -343,7 +332,6 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       transition: all 0.2s;
-      /* Pulse Animation applied here */
       animation: cyberPulse 3s infinite;
       margin-top: 1rem;
     }
@@ -423,7 +411,6 @@
       margin-bottom: 1.5rem;
     }
 
-    /* Stagger Animation Class for Results */
     .anim-stagger {
       opacity: 0;
       animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -437,12 +424,15 @@
     <div class="flex justify-between items-start mb-8 border-b border-slate-800 pb-4 w-full">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-emerald-500 tracking-tighter uppercase">JETLAG_COMMANDER <span
-            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">v10.11.0</span></h1>
+            class="text-slate-600 text-[10px] md:text-xs ml-1 align-bottom">V10.11.1 by Louie Tang</span></h1>
         <p class="text-[10px] text-slate-500 mt-1 tracking-widest">CIRCADIAN RHYTHM OVERRIDE PROTOCOL</p>
       </div>
       <div class="flex gap-2">
+        <button id="licenseBtn" onclick="goToView('view-license')" class="header-btn">
+          LICENSES
+        </button>
         <button id="compatBtn" onclick="toggleCompatMode()" class="header-btn">
-          COMPAT / 兼容
+          PC
         </button>
         <button id="langBtn" onclick="toggleLanguage()" class="header-btn">
           EN / 中
@@ -459,6 +449,27 @@
       <button onclick="goToView(1)" class="action-btn max-w-xs mx-auto" data-i18n="btn_start">
         开始
       </button>
+    </div>
+
+    <div id="view-license" class="view-section max-w-2xl mx-auto pt-8">
+      <h2 class="kb-header">COMPLIANCE // OPEN SOURCE LICENSES</h2>
+      <div class="space-y-6">
+        <div>
+          <h4 class="text-white font-bold text-sm mb-2">Tailwind CSS</h4>
+          <p class="text-[10px] text-slate-500 font-mono">MIT License | Copyright (c) Tailwind Labs, Inc.</p>
+        </div>
+        <div>
+          <h4 class="text-white font-bold text-sm mb-2">Luxon.js</h4>
+          <p class="text-[10px] text-slate-500 font-mono">MIT License | Copyright (c) 2017 Isaac Cambron</p>
+        </div>
+        <div>
+          <h4 class="text-white font-bold text-sm mb-2">JetBrains Mono</h4>
+          <p class="text-[10px] text-slate-500 font-mono">SIL Open Font License 1.1 | Copyright (c) 2020 JetBrains
+            s.r.o.</p>
+        </div>
+      </div>
+      <button onclick="goToView(1)" class="action-btn mt-8 bg-slate-800 hover:bg-slate-700"
+        data-i18n="btn_return">&lt;&lt; RETURN</button>
     </div>
 
     <div id="view-inputs" class="view-section max-w-2xl mx-auto">
@@ -761,16 +772,13 @@
   <script>
     const DateTime = luxon.DateTime;
 
-    // --- GLOBAL STATE ---
     let currentLang = 'zh';
     let globalPlan = [];
     let isCompatMode = false;
 
-    // --- PLATFORM DETECTION (Preserved "One Knife Cut") ---
     function detectPlatform() {
       const ua = navigator.userAgent.toLowerCase();
       const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
-
       const btn = document.getElementById('compatBtn');
 
       if (isMobile) {
@@ -778,15 +786,16 @@
         document.body.classList.remove('mode-compat');
         isCompatMode = false;
         btn.classList.remove('compat-active');
+        btn.innerText = "MOBILE"; // 修改文字
       } else {
         document.body.classList.add('mode-compat');
         document.body.classList.remove('mode-overlay');
         isCompatMode = true;
         btn.classList.add('compat-active');
+        btn.innerText = "PC"; // 修改文字
       }
     }
 
-    // --- COMPATIBILITY TOGGLE ---
     function toggleCompatMode() {
       isCompatMode = !isCompatMode;
       const btn = document.getElementById('compatBtn');
@@ -795,14 +804,15 @@
         document.body.classList.add('mode-compat');
         document.body.classList.remove('mode-overlay');
         btn.classList.add('compat-active');
+        btn.innerText = "PC"; // 修改文字
       } else {
         document.body.classList.remove('mode-compat');
         document.body.classList.add('mode-overlay');
         btn.classList.remove('compat-active');
+        btn.innerText = "MOBILE"; // 修改文字
       }
     }
 
-    // --- DISPLAY SYNC LOGIC ---
     function updateDateDisplay(inputEl, displayId) {
       const val = inputEl.value;
       if (!val) return;
@@ -878,7 +888,6 @@
       syncAMPM('wakeTime', 'wakeAMPM');
     }
 
-    // --- STANDARD LOGIC ---
     const translations = { zh: { welcome_title: "欢迎", welcome_desc: "Jetlag Commander 是一个智能调节时差的网页,帮助你科学的倒时差,包括跨国飞行以及熬夜造成的时差。", btn_start: "开始", btn_next: "下一步 >>", btn_execute: "生成指令 (EXECUTE)", btn_what: " [?] 说明", btn_return: "<< 返回", btn_export: "📅 添加到日历", step1: "Step 1: 上一次入睡时间", step2: "Step 2: 上一次起床时间", step3: "Step 3: 目标时区", step_dir: "时差调整方向设置", step_algo: "选择算法模型", dir_smart: "智能判断 (推荐)", dir_smart_desc: "自动计算“早睡”与“熬夜”的生理代价，选择最优解。", dir_early: "强制早睡", dir_early_desc: "强迫时钟前移，对身体更友好。", dir_late: "强制熬夜", dir_late_desc: "强迫时钟后移，仅推荐提前睡觉睡不着的。", strat_bio_title: "⚡️🧪 新智能模式(Beta)", strat_bio_desc: "不强制8小时睡眠。根据时差方向动态压缩或延长睡眠时间 (6-10h)，利用睡眠压力进行相位重塑。", strat_sci_title: "⚡️ 智能科学", strat_sci_desc: "模拟生理光照响应曲线 (PRC)。非线性步进。", strat_even_title: "⚖️ 线性均分", strat_even_desc: "传统稳健。将时差平均分配到每一天。", strat_fold_title: "🧬 快速折中", strat_fold_desc: "高效收敛。每日消除 50%。最后一天强制熔断。", duration: "周期/天数:", label_days: "Days", view_zone: "显示时区:", label_sleep: "入睡 (Sleep)", label_wake: "唤醒 (Wake)", desc_bio: "生物自适应：动态睡眠长度", desc_sci: "相位压缩：高强度非线性步进", desc_sci_final: "✅ 强制闭环：光照锚定完成", desc_even: "线性均分：每日调整", desc_fold_success: "✅ 区间达标 (20:00-23:00)。提前完成。", desc_fold_adjust: "折中收敛：相位调整", desc_fold_force: "⚠️ 强制执行：系统接管，锁定最终作息。", day_prefix: "DAY", badge_smart_early: "MODE: 智能早睡", badge_smart_late: "MODE: 智能熬夜", badge_force_early: "MODE: 强制早睡", badge_force_late: "MODE: 强制熬夜", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "时间锚点:入睡时间", kb_sleep_desc: "别填飞机起飞时间！别填你打算几点睡！<br>这里要的是你<strong>上次睡觉睡着的大致时间</strong>", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "时间锚点：上一次起床时间", kb_wake_desc: "填写<strong>今天起床</strong>的时间。<br><br>", kb_id_03: "TARGET FRAME", kb_target_title: "目标时区", kb_target_desc: "填写你想倒的目标地点<br><br>别管中转地，别管经停站，直接选最终目的地。如果是熬夜倒时差则保持现有地就行", kb_id_04: "VECTOR CONTROL", kb_dir_title: "早睡 vs 熬夜", kb_dir_desc: "人这身体啊，<strong>熬夜容易早起难</strong>。一天24小时，但生物钟其实有点“拖延症”（24.2小时），所以晚睡它是开心的，早起它是抗拒的。<br><br><strong>智能判断</strong>：系统会自动帮你算算，是现在咬牙少睡几小时划算，还是干脆通宵熬一熬更轻松。相信算法，它是专业的，能让你少受点罪。", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "算法模型架构", kb_algo_bio_desc: "这是本版本引入的最强算法。它摒弃了“每天睡8小时”的僵化逻辑。<br><strong>向东飞/早起 (Advance)</strong>：算法会主动压缩睡眠时间（如首日仅6小时），通过制造“睡眠压力”来强迫身体在次日更早入睡。<br><strong>向西飞/熬夜 (Delay)</strong>：算法会允许更长的恢复性睡眠（9-10小时），利用自然避光推迟醒来时间。", kb_algo_sci_desc: "非线性相位压缩模型。它不遵循线性均分，而是模拟光照响应曲线 (PRC)。<br>逻辑核心：在周期的前 2/3 阶段，通过特定的作息安排制造高稳态睡眠压力 (Homeostatic Sleep Pressure)，以此作为驱动力强行推动 75% 的相位迁移。最后一天进行软着陆锚定。这是目前效率最高的修正方案。", kb_algo_even_desc: "算术平均分布。将总时差绝对值平均切割。<br>这是一种机械式的保守方案。优点是每天的变化量恒定，身体反应可预期；缺点是对于大时差（>8小时）调整周期过长，且未利用生理机能的弹性。", kb_algo_fold_desc: "渐进收敛模型。基于半衰期原理。<br>每天消除当前剩余时差的 50%。首日调整幅度最大，随后呈指数级衰减。包含一个“强制熔断器”，在剩余时差小于阈值时强行对齐。" }, en: { welcome_title: "Welcome", welcome_desc: "Jetlag Commander is a smart web tool for adjusting jet lag, helping you scientifically adjust jet lag, including transcontinental flights and staying up late.", btn_start: "Start", btn_next: "NEXT STEP >>", btn_execute: "EXECUTE PROTOCOL", btn_what: " [?] Info", btn_return: "<< RETURN", btn_export: "📅 Add to Calendar", step1: "Step 1: Last Sleep Time", step2: "Step 2: Last Wake Time", step3: "Step 3: Target Zone", step_dir: "Direction Control", step_algo: "Algorithm Model", dir_smart: "Smart Auto (Rec)", dir_smart_desc: "Calculates physiological cost of Advance vs Delay.", dir_early: "Force Early", dir_early_desc: "Forces clock advance. Friendlier to the body.", dir_late: "Force Late", dir_late_desc: "Forces clock delay. Only recommended if unable to sleep early.", strat_bio_title: "⚡️🧪 Smart New(Beta)", strat_bio_desc: "Variable sleep duration (6-10h). Compresses sleep to advance phase, extends sleep to delay phase.", strat_sci_title: "⚡️ Smart Science", strat_sci_desc: "Simulates Physiological PRC. Non-linear stepping.", strat_even_title: "⚖️ Linear Even", strat_even_desc: "Conservative. Distributes offset evenly.", strat_fold_title: "🧬 Rapid Fold", strat_fold_desc: "Efficient convergence (50%/day). Force snap.", duration: "Duration:", label_days: "Days", view_zone: "View:", label_sleep: "Sleep At", label_wake: "Wake At", desc_bio: "Bio-Adaptive: Dynamic Sleep Duration", desc_sci: "Phase Compression: High-intensity shift", desc_sci_final: "✅ Locked: Circadian Anchor Set", desc_even: "Linear Even: Daily shift", desc_fold_success: "✅ Target Met (20:00-23:00).", desc_fold_adjust: "Fold Convergence: Phase shift", desc_fold_force: "⚠️ Override: System takeover.", day_prefix: "DAY", badge_smart_early: "MODE: SMART EARLY", badge_smart_late: "MODE: SMART LATE", badge_force_early: "MODE: FORCE EARLY", badge_force_late: "MODE: FORCE LATE", kb_id_01: "DATA ANCHOR 01", kb_sleep_title: "Real Sleep Time: When You Blacked Out", kb_sleep_desc: "Don't put your flight takeoff time! Don't put when you 'planned' to sleep!<br><br>We need the exact moment you actually <strong>closed your eyes and drifted off</strong>. The algorithm needs to know when your biological battery started charging. Garbage in, garbage out.", kb_id_02: "DATA ANCHOR 02", kb_wake_title: "System Boot: When You Opened Your Eyes", kb_wake_desc: "This is simply when you <strong>opened your eyes</strong> today. Whether you woke up naturally or a chaotic alarm dragged you out, this moment started your biological day.<br><br>This timestamp tells us exactly where your internal clock is currently pointing. Don't lie about snoozing.", kb_id_03: "TARGET FRAME", kb_target_title: "The Goal: Final Destination", kb_target_desc: "Where are you headed? Select the <strong>standard time</strong> of your final destination.<br><br>Ignore layovers, ignore stopovers. Your body only cares about where it's going to crash tonight.", kb_id_04: "VECTOR CONTROL", kb_dir_title: "Hard Mode vs Easy Mode", kb_dir_desc: "Here's the truth: <strong>Staying up (Delaying) is easy, waking up early (Advancing) is hard.</strong> Your body naturally wants to drift later.<br><br><strong>Smart Auto</strong>: Let the system do the math. It calculates if it's less painful to force yourself awake or just power through and stay up late. Trust the math.", kb_id_05: "COMPUTE KERNEL", kb_algo_title: "Algorithm Architecture", kb_algo_bio_desc: "The most advanced algorithm in this version. Discourages rigid 8h sleep.<br><strong>Advance:</strong> Compresses sleep (e.g. 6h) to build sleep pressure.<br><strong>Delay:</strong> Allows extended sleep (9-10h) to naturally drift later.", kb_algo_sci_desc: "Non-linear phase compression. Simulates Phase Response Curve (PRC).", kb_algo_even_desc: "Arithmetic mean distribution. Splits Δt evenly over N days.", kb_algo_fold_desc: "Half-life convergence. Eliminates 50% of remaining offset daily." } };
 
     function goToView(targetId) {
@@ -1057,8 +1066,7 @@
         else if (item.type === 'even') desc = `${t.desc_even}`;
         else if (item.type === 'fold') desc = item.success ? t.desc_fold_success : t.desc_fold_adjust;
 
-        // Stagger Animation Delay
-        const delay = index * 0.1; // 100ms staggered delay
+        const delay = index * 0.1;
 
         container.innerHTML += `
             <div class="hard-card p-6 anim-stagger" style="animation-delay: ${delay}s">
@@ -1100,13 +1108,12 @@
       document.body.removeChild(link);
     }
 
-    // INIT
     populate('sleepZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
     populate('wakeZone', Intl.DateTimeFormat().resolvedOptions().timeZone);
     populate('targetZone', "Asia/Shanghai");
     populate('displayZoneSelect', "Asia/Shanghai");
     initSplitInputs();
-    detectPlatform(); // RUN DETECTION
+    detectPlatform();
 
     const browserLang = navigator.language || navigator.userLanguage;
     if (browserLang.startsWith('zh')) currentLang = 'zh'; else currentLang = 'en';
