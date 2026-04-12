@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>JETLAG COMMANDER // v11.6.0 // OFFLINE_EDITION</title>
+  <link rel="stylesheet" href="lib/fonts.css">
   <script src="lib/tailwindcss.js"></script>
   <script src="lib/luxon.min.js"></script>
   <script>
@@ -24,11 +25,9 @@
     /* -----------------------
        FONT & RESET
        ----------------------- */
-    @font-face {
-      font-family: 'JetBrains Mono';
-      src: url('lib/JetBrainsMono-Bold.woff2') format('woff2');
-      font-weight: normal;
-      font-style: normal;
+    :root {
+      /* 修改此处数值调整整体字重 (建议范围: 200 - 400) */
+      --ui-font-weight: 300;
     }
 
     html, body {
@@ -40,12 +39,12 @@
 
     body {
       font-family: 'JetBrains Mono', "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: var(--ui-font-weight);
       background-color: #020617;
       color: #e2e8f0;
       -webkit-tap-highlight-color: transparent;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      font-weight: 400;
     }
 
     input,
