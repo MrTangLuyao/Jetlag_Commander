@@ -1,0 +1,281 @@
+/* ============================================================
+ * lib/louie.css
+ * Jetlag Commander — design tokens & components.
+ * Minimal dark theme — no wallpaper, no spotlight.
+ * ============================================================ */
+
+:root {
+  --bg: #1f1f1e;
+  --surface: #2a2a29;
+  --surface-high: #333332;
+  --border: #3a3a39;
+  --outline: #4a4a49;
+  --text: #e8e8e8;
+  --muted: #a1a1a0;
+  --accent: #d97757;
+  --accent-dim: rgba(217, 119, 87, 0.15);
+  --accent-on: #ffb49d;
+  --good: #7fc77f;
+  --warn: #e8c46a;
+  --bad:  #e87a6a;
+}
+
+html {
+  background-color: var(--bg);
+  /* Reserve space for the scrollbar so its appearance never shifts layout,
+   * but don't force-show it when content fits. */
+  scrollbar-gutter: stable;
+  /* Slightly larger overall reading size — easy to nudge if needed. */
+  zoom: 1.05;
+}
+body {
+  font-family: 'JetBrains Mono', 'HarmonyOS Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  margin: 0;
+}
+
+/* ─── Ripple ─── */
+.ripple-surface { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute; border-radius: 50%; transform: scale(0);
+  animation: ripple 600ms linear; pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+.ripple-primary .ripple { background-color: rgba(255, 255, 255, 0.3); }
+.ripple-surface-variant .ripple { background-color: rgba(255, 255, 255, 0.08); }
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+/* ─── Navbar (minimal) ─── */
+:root { --frost-progress: 0; }
+#navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; padding: 0 24px;
+  background: transparent;
+}
+#navbar::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-color: rgba(20, 20, 19, calc(0.55 * var(--frost-progress)));
+  backdrop-filter: blur(calc(14px * var(--frost-progress)));
+  -webkit-backdrop-filter: blur(calc(14px * var(--frost-progress)));
+  border-bottom: 1px solid rgba(58, 58, 57, calc(var(--frost-progress)));
+}
+#brand-btn {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center;
+  padding: 8px 12px; border-radius: 9999px;
+  border: none; background: transparent;
+  font-family: inherit; font-size: 18px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.05em; color: var(--text);
+  transition: background 0.2s ease;
+}
+#brand-btn:hover { background: rgba(255,255,255,0.10); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+#brand-btn .b-static { color: var(--text); }
+#brand-btn .b-page  { color: rgba(232,232,232,0.6); font-weight: 500; }
+.b-dot {
+  background: linear-gradient(90deg, #d97757, #ffb49d);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.nav-right { display: flex; align-items: center; gap: 8px; }
+#lang-toggle {
+  background: transparent; border: none;
+  color: var(--accent); font-family: inherit; font-size: 13.5px; font-weight: 500;
+  padding: 9px 18px; border-radius: 9999px; cursor: pointer; letter-spacing: 0.1em;
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 40px; box-sizing: border-box;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+#lang-toggle:hover { background: rgba(255,255,255,0.10); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: var(--text); }
+@media (max-width: 540px) {
+  #lang-toggle { width: 40px; padding: 0; gap: 0; justify-content: center; letter-spacing: 0; }
+  #lang-toggle #lang-label { display: none; }
+}
+
+/* ─── View transitions ─── */
+.view { display: none; }
+.view.active { display: block; animation: viewIn 0.45s cubic-bezier(0.22,1,0.36,1); }
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Unified button system ───
+ * Same box for both variants; only fill / border / weight differ.
+ * Color-only hover transitions — no transform, no box-shadow.
+ * Sizing matches our hero-level CTA scale from the earlier design pass.
+ */
+.btn-primary,
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border-radius: 9999px;
+  font-family: inherit; font-size: 14px; letter-spacing: 0.02em;
+  cursor: pointer; position: relative; overflow: hidden;
+  border: 1px solid transparent;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+.btn-ghost {
+  background: transparent; color: var(--text); font-weight: 600;
+  border-color: var(--outline);
+}
+.btn-ghost:hover {
+  color: var(--text); background-color: var(--surface-high);
+}
+.btn-primary {
+  background-color: var(--accent); color: #fff; font-weight: 700;
+  border-color: var(--accent);
+}
+.btn-primary:hover {
+  background-color: var(--accent-on); border-color: var(--accent-on);
+}
+
+/* Hero-sized modifier — same family, just a larger box. */
+.btn-hero {
+  padding: 18px 36px; font-size: 15px; min-width: 220px;
+}
+
+/* ─── Form chrome ─── */
+.field-label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.field-input, .field-select {
+  width: 100%; box-sizing: border-box;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; font-family: inherit; font-size: 15px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.field-input:focus, .field-select:focus {
+  outline: none; border-color: var(--accent); background: var(--surface-high);
+}
+input[type="datetime-local"], input[type="time"], input[type="date"] { color-scheme: dark; }
+
+/* ─── Plan ─── */
+.summary {
+  display: flex; flex-wrap: wrap; gap: 0;
+  padding: 16px 20px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.summary .s-cell {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0 18px; border-left: 1px solid var(--border);
+}
+.summary .s-cell:first-child { padding-left: 0; border-left: none; }
+.summary .s-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.summary .s-value { font-size: 16px; font-weight: 700; color: var(--text); }
+@media (max-width: 540px) {
+  .summary { gap: 12px; }
+  .summary .s-cell { padding: 0; border-left: none; min-width: 45%; }
+}
+
+.day-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 24px; margin-bottom: 20px;
+}
+.day-card h3 {
+  font-size: 18px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 12px; margin: 0 0 4px;
+}
+.day-card .day-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+.day-pill {
+  display: inline-flex; align-items: center; padding: 3px 11px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  border-radius: 9999px; background: var(--accent-dim); color: var(--accent-on);
+  text-transform: uppercase;
+}
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-row {
+  display: grid; grid-template-columns: 86px 28px 1fr;
+  align-items: start; gap: 12px;
+  padding: 12px 0; border-top: 1px dashed var(--border);
+}
+.tl-row:first-child { border-top: none; padding-top: 0; }
+.tl-time { font-size: 13px; font-weight: 700; color: var(--accent-on); letter-spacing: 0.02em; }
+.tl-icon { width: 28px; height: 28px; border-radius: 8px; display:flex; align-items:center; justify-content:center; background: var(--accent-dim); color: var(--accent-on); flex-shrink: 0; }
+.tl-icon.gray { background: rgba(161,161,160,0.12); color: var(--muted); }
+.tl-icon.good { background: rgba(127,199,127,0.15); color: var(--good); }
+.tl-icon.warn { background: rgba(232,196,106,0.15); color: var(--warn); }
+.tl-icon.bad  { background: rgba(232,122,106,0.15); color: var(--bad); }
+.tl-text { font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.tl-text .tl-sub { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; line-height: 1.55; }
+@media (max-width: 540px) {
+  .tl-row { grid-template-columns: 64px 24px 1fr; gap: 10px; }
+  .tl-time { font-size: 12px; }
+  .tl-icon { width: 24px; height: 24px; }
+  .tl-text { font-size: 14px; }
+}
+
+.note {
+  padding: 14px 18px; border-radius: 12px;
+  background: rgba(232,196,106,0.08); border: 1px solid rgba(232,196,106,0.25);
+  color: var(--warn); font-size: 13px; line-height: 1.7;
+}
+
+::selection { background: var(--accent); color: #fff; }
+
+/* ─── Segmented mode selector (jetlag target dial) ─── */
+.mode-seg {
+  display: inline-flex; gap: 4px;
+  padding: 4px; border-radius: 9999px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin: 4px 0 20px;
+}
+.mode-seg-btn {
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  padding: 8px 18px; border-radius: 9999px;
+  background: transparent; border: none; color: var(--muted);
+  cursor: pointer; letter-spacing: 0.02em;
+  transition: color 0.18s ease, background-color 0.18s ease;
+  position: relative; overflow: hidden;
+}
+.mode-seg-btn:hover { color: var(--text); background-color: var(--accent-dim); }
+.mode-seg-btn.active {
+  background-color: var(--accent); color: #fff;
+}
+
+/* ─── Disabled clock (regular / keep modes) ─── */
+.clock-card.disabled .clock-svg { pointer-events: none; opacity: 0.45; }
+.clock-card.disabled .ck-times .val { color: var(--muted); }
+
+/* ─── Center action row ─── */
+.row-actions { justify-content: center; }
+
+/* ─── Ambient sound-wave animation (prep "mental state" item) ───
+ * A calm core pulse with three concentric rings rippling outward
+ * at staggered phase. Reads like a sonar / ambient indicator.
+ */
+@keyframes ambientRing {
+  0%   { r: 7;  opacity: 0; }
+  20%  { opacity: 0.55; }
+  100% { r: 40; opacity: 0; }
+}
+@keyframes ambientCore {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+.amb-core {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: ambientCore 3.6s ease-in-out infinite;
+}
+.amb-r1 { animation: ambientRing 3.6s ease-out infinite; }
+.amb-r2 { animation: ambientRing 3.6s ease-out infinite 1.2s; }
+.amb-r3 { animation: ambientRing 3.6s ease-out infinite 2.4s; }
+
+/* ─── Timeline section heading (Morning / Afternoon / Night) ─── */
+.tl-section {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 18px 0 8px 0;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.tl-section:first-child {
+  border-top: none; margin-top: 0; padding-top: 0;
+}
+.tl-section + .tl-row { border-top: none; padding-top: 4px; }
