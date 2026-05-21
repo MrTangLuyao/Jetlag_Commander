@@ -255,7 +255,8 @@
     }
     @media (max-width: 540px) { .jet-grid { grid-template-columns: 1fr; } }
 
-    .row-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    /* .row-actions base styles (display:flex + centering) live in louie.css. */
+    .row-actions { margin-top: 28px; }
 
     /* ─── PLAN view ─── */
     .plan-wrap { padding: 96px 24px 80px; max-width: 880px; margin: 0 auto; }
@@ -294,15 +295,58 @@
       color: var(--text); font-size: 15px; line-height: 1.7;
       margin: 0 0 24px;
     }
+
+    /* ─── Mobile tap stability ───
+     * Some mobile browsers apply a transient "press" transform to buttons
+     * (and double-tap zoom delay), which read as the button briefly
+     * shrinking. Pin transform on :active and disable the zoom gesture.
+     */
+    .btn-primary, .btn-ghost, .btn-hero,
+    #brand-btn, #lang-toggle,
+    .mode-seg-btn, .prep-item, .prep-toggle,
+    .ripple-surface {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:active, .btn-ghost:active, .btn-hero:active,
+    #brand-btn:active, #lang-toggle:active,
+    .mode-seg-btn:active, .prep-item:active {
+      transform: none;
+    }
+    /* On phones, give the two hero CTAs the full column width so they
+     * don't sit awkwardly small inside the 320px stack. */
+    @media (max-width: 480px) {
+      .hero .choose .btn-hero { width: 100%; min-width: 0; }
+    }
+    /* Slightly larger prep icons on phones so the breathing-face / coffee /
+     * pill artwork doesn't feel lost inside the card. */
+    @media (max-width: 600px) {
+      .prep-item .pi-art { height: 124px; }
+      .prep-item .pi-art svg { width: 104px; height: 104px; }
+    }
+
+    /* ─── Share-link toast ─── */
+    #share-toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-high); color: var(--text);
+      padding: 12px 22px; border-radius: 9999px;
+      border: 1px solid var(--outline);
+      font-size: 13px; letter-spacing: 0.02em;
+      z-index: 10000; pointer-events: none;
+      opacity: 0; transition: opacity 0.22s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+    }
+    #share-toast.on { opacity: 1; }
   </style>
 </head>
 <body class="antialiased min-h-screen">
 
   <nav id="navbar">
     <div>
-      <button id="brand-btn" class="ripple-surface" type="button" onclick="showView('home')">
-        <span class="b-static">jetlag</span><span class="b-dot">.</span><span class="b-page">commander 2</span>
-      </button>
+      <a id="brand-btn" class="ripple-surface" data-home-link href="index.html" style="text-decoration:none;">
+        <span class="b-static">jetlag</span><span class="b-dot">.</span><span class="b-page">commander</span>
+      </a>
     </div>
     <div class="nav-right">
       <button id="lang-toggle" class="ripple-surface" onclick="toggleLang()">
@@ -389,10 +433,15 @@
           <div class="prep-item ripple-surface" data-item="mind" onclick="togglePrepItem('mind')">
             <div class="pi-art">
               <svg viewBox="0 0 100 100" aria-hidden="true">
-                <circle class="amb-r amb-r3" cx="50" cy="50" r="7" fill="none" stroke="#ffb49d" stroke-width="1.4"/>
-                <circle class="amb-r amb-r2" cx="50" cy="50" r="7" fill="none" stroke="#ffb49d" stroke-width="1.4"/>
-                <circle class="amb-r amb-r1" cx="50" cy="50" r="7" fill="none" stroke="#ffb49d" stroke-width="1.4"/>
-                <circle class="amb-core" cx="50" cy="50" r="6" fill="#d97757"/>
+                <g class="mind-figure">
+                  <path class="mind-halo"
+                        d="M 16 62 Q 16 22 50 22 Q 84 22 84 62"
+                        fill="none" stroke="#ffb49d" stroke-width="4" stroke-linecap="round"/>
+                  <circle cx="50" cy="50" r="9"
+                          fill="none" stroke="#d97757" stroke-width="3.5"/>
+                  <path d="M 32 84 Q 34 66 50 66 Q 66 66 68 84"
+                        fill="none" stroke="#d97757" stroke-width="3.5" stroke-linecap="round"/>
+                </g>
               </svg>
             </div>
             <h4 data-i18n="prep-mind-h">一份好心态</h4>
@@ -427,6 +476,13 @@
       <h2 data-i18n="sleep-h">调整你的睡眠</h2>
       <p class="lede" data-i18n="sleep-lede">拖动表盘上两个把手 —— 一边是你"现在"的入睡 / 起床时间，一边是你"想要"的目标。算法会自动决定 1–3 天怎么走。</p>
 
+      <div style="display:flex; justify-content:center;">
+        <div class="mode-seg" id="sleep-mode-seg">
+          <button type="button" class="mode-seg-btn active ripple-surface" data-mode="regular" data-i18n="sleep-mode-regular" onclick="setSleepMode('regular')">规律</button>
+          <button type="button" class="mode-seg-btn ripple-surface" data-mode="custom" data-i18n="sleep-mode-custom" onclick="setSleepMode('custom')">自定义</button>
+        </div>
+      </div>
+
       <div class="clock-grid">
         <div class="clock-card">
           <div class="ck-label" data-i18n="ck-now">CURRENT · 现在</div>
@@ -437,14 +493,14 @@
           <svg class="clock-svg" id="clock-now" viewBox="-150 -150 300 300"></svg>
           <div class="ck-hint" data-i18n="ck-hint">⬤ 拖动表盘两端调整 · 15 分钟为一档</div>
         </div>
-        <div class="clock-card">
+        <div class="clock-card disabled" id="sleep-tgt-card">
           <div class="ck-label" data-i18n="ck-tgt">TARGET · 目标</div>
           <div class="ck-times">
             <div class="ck-cell"><div class="lbl" data-i18n="ck-sleep">SLEEP</div><div class="val" id="tgt-sleep-val">23:00</div></div>
             <div class="ck-cell"><div class="lbl" data-i18n="ck-wake">WAKE</div><div class="val" id="tgt-wake-val">07:00</div></div>
           </div>
           <svg class="clock-svg" id="clock-tgt" viewBox="-150 -150 300 300"></svg>
-          <div class="ck-hint" data-i18n="ck-hint">⬤ 拖动表盘两端调整 · 15 分钟为一档</div>
+          <div class="ck-hint" id="sleep-tgt-hint" data-i18n="sleep-tgt-hint-regular">默认 23:00 入睡，07:00 起床</div>
         </div>
       </div>
 
@@ -520,16 +576,7 @@
     </div>
   </section>
 
-  <!-- ─── PLAN ─── -->
-  <section id="view-plan" class="view">
-    <div class="plan-wrap">
-      <button class="btn-ghost ripple-surface" id="plan-back" style="margin-bottom: 16px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        <span data-i18n="back">返回</span>
-      </button>
-      <div id="plan-content"></div>
-    </div>
-  </section>
+  <!-- The plan/result view lives at /plan/ — see plan/index.html. -->
 
   <!-- ─── Mind modal (shown when user clicks "没有好心态？") ─── -->
   <div class="info-modal" id="mind-modal" role="dialog" aria-modal="true" aria-labelledby="mind-modal-text">
@@ -539,911 +586,10 @@
     </div>
   </div>
 
-  <script>
-    /* ============================================================
-     * Cities
-     * ============================================================ */
-    const CITIES = [
-      { en:'Honolulu', zh:'檀香山', zone:'Pacific/Honolulu' },
-      { en:'Anchorage', zh:'安克雷奇', zone:'America/Anchorage' },
-      { en:'Los Angeles', zh:'洛杉矶', zone:'America/Los_Angeles' },
-      { en:'Vancouver', zh:'温哥华', zone:'America/Vancouver' },
-      { en:'Denver', zh:'丹佛', zone:'America/Denver' },
-      { en:'Chicago', zh:'芝加哥', zone:'America/Chicago' },
-      { en:'New York', zh:'纽约', zone:'America/New_York' },
-      { en:'Toronto', zh:'多伦多', zone:'America/Toronto' },
-      { en:'Mexico City', zh:'墨西哥城', zone:'America/Mexico_City' },
-      { en:'São Paulo', zh:'圣保罗', zone:'America/Sao_Paulo' },
-      { en:'London', zh:'伦敦', zone:'Europe/London' },
-      { en:'Paris', zh:'巴黎', zone:'Europe/Paris' },
-      { en:'Berlin', zh:'柏林', zone:'Europe/Berlin' },
-      { en:'Rome', zh:'罗马', zone:'Europe/Rome' },
-      { en:'Athens', zh:'雅典', zone:'Europe/Athens' },
-      { en:'Moscow', zh:'莫斯科', zone:'Europe/Moscow' },
-      { en:'Dubai', zh:'迪拜', zone:'Asia/Dubai' },
-      { en:'New Delhi / Mumbai', zh:'新德里 / 孟买', zone:'Asia/Kolkata' },
-      { en:'Bangkok', zh:'曼谷', zone:'Asia/Bangkok' },
-      { en:'Singapore', zh:'新加坡', zone:'Asia/Singapore' },
-      { en:'Hong Kong', zh:'香港', zone:'Asia/Hong_Kong' },
-      { en:'Beijing / Shanghai', zh:'北京 / 上海', zone:'Asia/Shanghai' },
-      { en:'Taipei', zh:'台北', zone:'Asia/Taipei' },
-      { en:'Tokyo', zh:'东京', zone:'Asia/Tokyo' },
-      { en:'Seoul', zh:'首尔', zone:'Asia/Seoul' },
-      { en:'Sydney', zh:'悉尼', zone:'Australia/Sydney' },
-      { en:'Melbourne', zh:'墨尔本', zone:'Australia/Melbourne' },
-      { en:'Auckland', zh:'奥克兰', zone:'Pacific/Auckland' }
-    ];
-
-    /* ============================================================
-     * i18n
-     * ============================================================ */
-    const I18N = {
-      zh: {
-        'hero-sub':'科学调整睡眠',
-        'home-sleep':'我要调整睡眠','home-jet':'我要倒时差',
-        'prep-title':'开始之前，请准备好','prep-lede':'这三样东西，能帮助你完成一次干净的节律重置。',
-        'prep-helper':'没有这些？没关系，点击它们让我知道。',
-        'prep-q-coffee':'没有咖啡？','prep-q-melatonin':'没有褪黑素？','prep-q-mind':'没有好心态？',
-        'prep-r-coffee':'我没有咖啡','prep-r-melatonin':'我没有褪黑素',
-        'mind-modal-text':'好心态是调整睡眠必不可少的。','modal-ok':'好的',
-        'prep-coffee-h':'一杯咖啡','prep-coffee-p':'让我们更清醒。',
-        'prep-pill-h':'一颗褪黑素','prep-pill-p':'约0.5mg，给你一个好睡眠。',
-        'prep-mind-h':'一份好心态','prep-mind-p':'相信自己，保持良好的精神状态。',
-        'prep-ready':'准备好了，开始','back':'返回',
-        'sleep-h':'调整你的睡眠','sleep-lede':'左侧为目前的时间，右侧为你想调整的时间。',
-        'jet-h':'倒时差','jet-lede':'左侧为你在家的睡眠节律，右侧为到达后想要的节律。',
-        'ck-now':'现在','ck-tgt':'目标','ck-home':'在家睡眠习惯','ck-tgt-jet':'目的地节律',
-        'ck-sleep':'入睡','ck-wake':'起床','ck-hint':'⬤ 拖动表盘两端调整，15 分钟为一档',
-        'jet-from':'出发地','jet-to':'目的地','jet-arrive':'到达时间（目的地当地）',
-        'jet-mode-regular':'规律','jet-mode-keep':'保持','jet-mode-custom':'自定义',
-        'jet-tgt-hint-regular':'默认 23:00 入睡，07:00 起床',
-        'jet-tgt-hint-keep':'和左侧保持一致',
-        'jet-tgt-hint-custom':'⬤ 拖动表盘两端调整，15 分钟为一档',
-        'section-morning':'早上','section-afternoon':'下午','section-evening':'晚上',
-        'generate':'生成行动计划',
-        'lbl-direction':'理论方向','lbl-shift':'时差','lbl-days':'恢复天数','lbl-rate':'每日推进',
-        'dir-advance':'向东移动','dir-delay':'向西移动','dir-none':'无明显时差',
-        'plan-sub':'你的专属生活计划',
-        'h':'小时','min':'分钟','day-fmt':'第 %N% 天','arrival-day-fmt':'到达第 %N% 天',
-        'wake':'起床 见阳光','wake-sub':'拉开窗帘走出门，让阳光唤醒身体。',
-        'no-light':'暂时避光','no-light-sub':'戴上墨镜或拉好窗帘，等到上午十点再迎光。',
-        'water':'喝水吃早餐','water-sub':'一大杯水加一份蛋白质，启动新的一天。',
-        'walk':'出去走走','walk-sub':'二三十分钟，阳光下溜达一圈。',
-        'caf-ok':'喝一杯咖啡','caf-ok-sub':'今天就这一杯，慢慢享受。',
-        'lunch':'吃午饭','lunch-sub':'按目的地的时间吃，让肠胃跟上节奏。',
-        'nap':'小睡一下','nap-sub':'设个三十分钟闹钟，下午三点前结束。',
-        'caf-stop':'停咖啡因','caf-stop-sub':'茶、可乐、巧克力今天都先放放。',
-        'exercise':'动一动','exercise-sub':'快走、拉伸或瑜伽，温和就够了。',
-        'dinner':'吃晚餐','dinner-sub':'清淡一点，今晚不要喝酒。',
-        'dim':'调暗灯光','dim-sub':'手机亮度调低，戴上蓝光眼镜。',
-        'warm-bath':'洗个热水澡','warm-bath-sub':'四十度左右，泡十分钟就好。',
-        'mel':'吃褪黑素','mel-sub':'约 0.5mg，舌下含服或快释。',
-        'bed':'上床睡觉','bed-sub':'卧室全黑，手机放在卧室外。',
-        'preflight-shift-advance':'今晚起，比平时早 1 小时上床、早 1 小时起','preflight-shift-delay':'今晚起，比平时晚 1 小时上床、晚 1 小时起',
-        'flight-no-alc':'机上滴酒不沾，每小时 200 ml 水','flight-no-alc-sub':'酒精破坏 REM，加剧脱水。',
-        'flight-time':'按目的地时间作息','flight-time-sub':'他们的"夜"= 你睡 (眼罩 + 耳塞)；他们的"昼"= 你保持清醒。',
-        'flight-meal':'最后一餐对齐目的地下一顿','flight-meal-sub':'空腹 12–16 小时再吃，给肝脏快速授时。',
-        'result-h':'你的行动计划','result-save':'保存','result-cal':'添加至日历','result-restart':'重新开始',
-        'pre-flight':'起飞前 / 飞行中','no-shift':'你的当前作息已经接近目标，今晚执行一次完整计划即可。',
-        'aggressive':'⚡ 时差较大，3 天方案推进幅度高于自然节律。务必严格执行光照与褪黑素时机。',
-        'wake-bed-line':'起床 %WAKE% → 入睡 %BED%','on-target':'已对齐目标节律',
-        'jet-target':'想几点睡（目的地）',
-        'remain-advance':'还需向前 ','remain-delay':'还需向后 '
-      },
-      en: {
-        'hero-sub':'Science-grade sleep reset',
-        'home-sleep':'Shift my sleep','home-jet':'Beat jet lag',
-        'prep-title':'Before we start, grab these','prep-lede':'These three things help you complete a clean rhythm reset.',
-        'prep-helper':'Don\'t have them? No problem. Click to let me know.',
-        'prep-q-coffee':'No coffee?','prep-q-melatonin':'No melatonin?','prep-q-mind':'No good mindset?',
-        'prep-r-coffee':'I don\'t have coffee','prep-r-melatonin':'I don\'t have melatonin',
-        'mind-modal-text':'A good mindset is essential to resetting your sleep.','modal-ok':'OK',
-        'prep-coffee-h':'One coffee','prep-coffee-p':'Keeps you sharper.',
-        'prep-pill-h':'Melatonin','prep-pill-p':'About 0.5 mg, for a clean night of sleep.',
-        'prep-mind-h':'A patient mind','prep-mind-p':'Trust the process. Keep a clear head.',
-        'prep-ready':'I\'m ready, start','back':'Back',
-        'sleep-h':'Shift your sleep','sleep-lede':'Left dial: where you are now. Right dial: where you want to be.',
-        'jet-h':'Beat jet lag','jet-lede':'Left dial: your home rhythm. Right dial: target rhythm at destination.',
-        'ck-now':'Now','ck-tgt':'Target','ck-home':'Home rhythm','ck-tgt-jet':'Destination rhythm',
-        'ck-sleep':'Sleep','ck-wake':'Wake','ck-hint':'⬤ Drag either handle, snaps to 15 min',
-        'jet-from':'Origin','jet-to':'Destination','jet-arrive':'Arrival (destination local)','jet-target':'Target bedtime (destination)',
-        'jet-mode-regular':'Regular','jet-mode-keep':'Mirror','jet-mode-custom':'Custom',
-        'jet-tgt-hint-regular':'Default 23:00 sleep, 07:00 wake',
-        'jet-tgt-hint-keep':'Mirrors your home rhythm',
-        'jet-tgt-hint-custom':'⬤ Drag either handle, snaps to 15 min',
-        'section-morning':'Morning','section-afternoon':'Afternoon','section-evening':'Night',
-        'generate':'Generate plan',
-        'lbl-direction':'Theoretical shift','lbl-shift':'Time gap','lbl-days':'Recovery days','lbl-rate':'Per-day',
-        'dir-advance':'Move east','dir-delay':'Move west','dir-none':'No shift',
-        'plan-sub':'Your personal living plan',
-        'h':'h','min':'min','day-fmt':'Day %N%','arrival-day-fmt':'Arrival Day %N%',
-        'wake':'Wake up, see the sun','wake-sub':'Open the curtains or step outside to wake your body.',
-        'no-light':'Stay dim for now','no-light-sub':'Wear sunglasses or keep the curtains drawn until about 10 am.',
-        'water':'Water and breakfast','water-sub':'A big glass of water with some protein to start the day.',
-        'walk':'Take a walk','walk-sub':'Twenty to thirty minutes outside in the sun.',
-        'caf-ok':'Have a coffee','caf-ok-sub':'Just this one today — enjoy it slowly.',
-        'lunch':'Eat lunch','lunch-sub':'On the destination\'s local clock, so digestion catches up.',
-        'nap':'Take a short nap','nap-sub':'Thirty-minute alarm, done before 3 pm.',
-        'caf-stop':'No more caffeine','caf-stop-sub':'No tea, cola, or chocolate for the rest of today.',
-        'exercise':'Move a bit','exercise-sub':'Walk, stretch, or yoga — keep it gentle.',
-        'dinner':'Eat dinner','dinner-sub':'Light meal, no alcohol tonight.',
-        'dim':'Dim the lights','dim-sub':'Turn phone brightness way down, blue blockers help.',
-        'warm-bath':'Take a warm shower','warm-bath-sub':'Around 40°C for about ten minutes.',
-        'mel':'Take melatonin','mel-sub':'About 0.5 mg, sublingual or fast-release.',
-        'bed':'Lights out','bed-sub':'Dark room, phone in another room.',
-        'preflight-shift-advance':'Tonight: 1 h earlier to bed, 1 h earlier wake','preflight-shift-delay':'Tonight: 1 h later to bed, 1 h later wake',
-        'flight-no-alc':'Zero alcohol on the plane · 200 ml water per hour','flight-no-alc-sub':'Alcohol wrecks REM and accelerates dehydration.',
-        'flight-time':'Live on destination time on board','flight-time-sub':'Their "night" = you sleep (eye mask + earplugs); their "day" = stay awake.',
-        'flight-meal':'Time your last meal to destination\'s next mealtime','flight-meal-sub':'12–16-h fast before that meal entrains the liver clock fast.',
-        'result-h':'Your action plan','result-save':'Save','result-cal':'Add to calendar','result-restart':'Start over',
-        'pre-flight':'Pre-flight / in-flight','no-shift':'Already close to target. Run one full day of the plan tonight.',
-        'aggressive':'⚡ Large shift. This 3-day plan exceeds the natural pace. Strict light & melatonin timing required.',
-        'wake-bed-line':'wake %WAKE% → bed %BED%','on-target':'on target rhythm',
-        'remain-advance':'Move rhythm earlier by ','remain-delay':'Move rhythm later by '
-      }
-    };
-
-    let LANG = navigator.language.toLowerCase().includes('zh') ? 'zh' : 'en';
-    function t(k){ return (I18N[LANG]&&I18N[LANG][k])||I18N.en[k]||k; }
-    function applyLang(lang){
-      LANG = lang;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const k = el.getAttribute('data-i18n');
-        if (I18N[lang][k] !== undefined) el.textContent = I18N[lang][k];
-      });
-      document.querySelectorAll('[data-i18n-html]').forEach(el => {
-        const k = el.getAttribute('data-i18n-html');
-        if (I18N[lang][k] !== undefined) el.innerHTML = I18N[lang][k];
-      });
-      document.getElementById('lang-label').textContent = lang==='zh' ? '文 ⇄ EN' : 'EN ⇄ 文';
-      document.documentElement.lang = lang==='zh' ? 'zh-CN' : 'en';
-      fillCityDropdowns();
-      bindRipples();
-    }
-    function toggleLang(){ applyLang(LANG==='zh'?'en':'zh'); }
-
-    /* ============================================================
-     * Ripples + view switching
-     * ============================================================ */
-    function createRipple(event){
-      const button = event.currentTarget;
-      const circle = document.createElement('span');
-      const diameter = Math.max(button.clientWidth, button.clientHeight);
-      const radius = diameter/2;
-      const rect = button.getBoundingClientRect();
-      circle.style.width = circle.style.height = diameter+'px';
-      circle.style.left = (event.clientX-rect.left-radius)+'px';
-      circle.style.top  = (event.clientY-rect.top-radius)+'px';
-      circle.classList.add('ripple');
-      const ex = button.querySelector('.ripple'); if (ex) ex.remove();
-      circle.addEventListener('animationend', () => circle.remove());
-      button.appendChild(circle);
-    }
-    function bindRipples(){
-      document.querySelectorAll('.ripple-surface').forEach(el => {
-        if (el.dataset.rippleBound) return;
-        el.dataset.rippleBound = '1';
-        el.addEventListener('touchstart', (e) => {
-          el._lastTouch = Date.now();
-          createRipple({ currentTarget: el, clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
-        }, { passive: true });
-        el.addEventListener('mousedown', (e) => {
-          if (Date.now() - (el._lastTouch||0) < 500) return;
-          createRipple(e);
-        });
-      });
-    }
-
-    function showView(name){
-      // Clear any stray ripple spans before switching views so they
-      // don't replay when the originating view re-activates later.
-      document.querySelectorAll('.ripple').forEach(r => r.remove());
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      const el = document.getElementById('view-' + name);
-      if (el) el.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    }
-
-    /* ============================================================
-     * Prepare animation flow
-     * ============================================================ */
-    let _flow = null;   // 'sleep' | 'jet'
-    let _prepTimers = [];
-    // Whether the user has each item available. Default true.
-    const _prepHave = { coffee: true, melatonin: true };
-
-    function togglePrepItem(key){
-      // Mindset takes a different path: it's non-negotiable. Show a small
-      // modal explaining that, don't dim the card.
-      if (key === 'mind') {
-        openMindModal();
-        return;
-      }
-      if (!_prepHave.hasOwnProperty(key)) return;
-      _prepHave[key] = !_prepHave[key];
-      const item = document.querySelector(`.prep-item[data-item="${key}"]`);
-      if (!item) return;
-      item.classList.toggle('dimmed', !_prepHave[key]);
-      // The popover label is a sibling of .prep-item (inside .prep-slot);
-      // update its text to question / restore form based on state.
-      const slot = item.closest('.prep-slot');
-      const btn = slot ? slot.querySelector('.prep-toggle') : null;
-      if (btn) {
-        const i18nKey = _prepHave[key] ? ('prep-q-' + key) : ('prep-r-' + key);
-        btn.setAttribute('data-i18n', i18nKey);
-        btn.textContent = t(i18nKey);
-      }
-    }
-
-    function openMindModal(){
-      const m = document.getElementById('mind-modal');
-      if (m) m.classList.add('open');
-    }
-    function closeMindModal(){
-      const m = document.getElementById('mind-modal');
-      if (m) m.classList.remove('open');
-    }
-
-    /* ============================================================
-     * Plan actions (save / calendar / restart)
-     * ============================================================ */
-    // Latest plan snapshot, populated by generateSleep / generateJetlag.
-    // Drives the .ics export.
-    let _lastPlan = null;
-
-    const ICON_SAVE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-    const ICON_CAL  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-    const ICON_RESTART = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
-
-    function planActionsHtml(mode){
-      return `<div class="row-actions plan-actions">
-        <button class="btn-ghost ripple-surface plan-action-btn" onclick="savePlan()">${ICON_SAVE}<span>${t('result-save')}</span></button>
-        <button class="btn-ghost ripple-surface plan-action-btn" onclick="addPlanToCalendar()">${ICON_CAL}<span>${t('result-cal')}</span></button>
-        <button class="btn-ghost ripple-surface plan-action-btn" onclick="restartPlan('${mode}')">${ICON_RESTART}<span>${t('result-restart')}</span></button>
-      </div>`;
-    }
-
-    function savePlan(){ window.print(); }
-    function restartPlan(mode){ showView(mode === 'jet' ? 'input-jet' : 'input-sleep'); }
-
-    function addPlanToCalendar(){
-      if (!_lastPlan) return;
-      const ics = buildICS(_lastPlan);
-      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'jetlag-commander-' + (_lastPlan.mode || 'plan') + '.ics';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
-    }
-
-    function _escIcs(s){
-      return String(s == null ? '' : s)
-        .replace(/\\/g, '\\\\')
-        .replace(/\r?\n/g, '\\n')
-        .replace(/,/g, '\\,')
-        .replace(/;/g, '\\;');
-    }
-
-    function buildICS(state){
-      const { plan, direction, startDate, timezone, mode } = state;
-      const stamp = DT.utc().toFormat("yyyyLLdd'T'HHmmss'Z'");
-      const seriesId = Date.now().toString(36);
-      const lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Jetlag Commander 2//EN',
-        'CALSCALE:GREGORIAN',
-        'METHOD:PUBLISH',
-        'X-WR-CALNAME:' + _escIcs((mode === 'jet' ? 'Jetlag — ' : 'Sleep — ') + 'Jetlag Commander 2')
-      ];
-      let uidCounter = 0;
-      plan.forEach((d, dayIdx) => {
-        const dayBase = startDate.plus({ days: dayIdx });
-        const items = buildDayItems(direction, d.bed, d.wake, d.i === 1);
-        items.forEach(item => {
-          // Items with t < wakeMin are part of the SUBJECTIVE same-day plan
-          // but happen after midnight clock-wise — shift them to the next
-          // calendar day so they line up with how the user reads the plan.
-          let dt = dayBase.set({ hour: Math.floor(item.t / 60), minute: item.t % 60, second: 0 });
-          if (item.t < d.wake) dt = dt.plus({ days: 1 });
-          const dtStr = dt.toFormat("yyyyLLdd'T'HHmmss");
-          const dtEnd = dt.plus({ minutes: 30 }).toFormat("yyyyLLdd'T'HHmmss");
-          uidCounter += 1;
-          lines.push('BEGIN:VEVENT');
-          lines.push('UID:' + seriesId + '-' + uidCounter + '@jetlag-commander');
-          lines.push('DTSTAMP:' + stamp);
-          lines.push('DTSTART;TZID=' + timezone + ':' + dtStr);
-          lines.push('DTEND;TZID=' + timezone + ':' + dtEnd);
-          lines.push('SUMMARY:' + _escIcs(item.h));
-          lines.push('DESCRIPTION:' + _escIcs(item.s));
-          lines.push('END:VEVENT');
-        });
-      });
-      lines.push('END:VCALENDAR');
-      return lines.join('\r\n') + '\r\n';
-    }
-    function startFlow(which){
-      _flow = which;
-      showView('prep');
-      // Clear any pending entrance timers from a prior visit
-      _prepTimers.forEach(clearTimeout); _prepTimers = [];
-      // Reset the three cards to their hidden state WITHOUT animating
-      // back (otherwise you see them flicker down before rising again).
-      const items = ['prep-1','prep-2','prep-3'].map(id => document.getElementById(id));
-      items.forEach(el => {
-        el.style.transition = 'none';
-        el.classList.remove('show');
-      });
-      // Force a reflow so the reset is committed before transitions resume.
-      void items[0].offsetWidth;
-      items.forEach(el => { el.style.transition = ''; });
-      // Trigger the entrance sequence
-      items.forEach((el, i) => {
-        _prepTimers.push(setTimeout(() => el.classList.add('show'), 250 + i * 450));
-      });
-    }
-    function afterPrep(){
-      if (_flow === 'sleep') showView('input-sleep');
-      else showView('input-jet');
-    }
-
-    /* ============================================================
-     * 24-hour SVG clock-dial picker
-     * Two handles (sleep & wake) draggable, snap 15-min,
-     * arc highlights the sleep window from sleep → wake (clockwise).
-     * Angle convention: 00:00 at top (-90°), clockwise.
-     * ============================================================ */
-    const R = 110;         // arc radius
-    const HANDLE_R = 14;
-    const SNAP_MIN = 15;
-
-    function minToAngle(m){ return (m / 1440) * Math.PI * 2; }     // radians, 0=top
-    function angleToMin(a){
-      // normalize to [0, 2π)
-      let aa = a;
-      while (aa < 0) aa += Math.PI * 2;
-      aa = aa % (Math.PI * 2);
-      let m = Math.round((aa / (Math.PI * 2)) * 1440 / SNAP_MIN) * SNAP_MIN;
-      m = ((m % 1440) + 1440) % 1440;
-      return m;
-    }
-    function polar(angleRad, r){
-      // 0 = top of clock
-      return { x: r * Math.sin(angleRad), y: -r * Math.cos(angleRad) };
-    }
-    function fmt(m){
-      m = ((m%1440)+1440)%1440;
-      return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
-    }
-
-    function createClock(svgId, opts){
-      // opts: { sleepMin, wakeMin, onChange(sleepMin, wakeMin) }
-      const svg = document.getElementById(svgId);
-      const NS = 'http://www.w3.org/2000/svg';
-      const state = { sleepMin: opts.sleepMin, wakeMin: opts.wakeMin };
-
-      // background ring
-      const bg = document.createElementNS(NS, 'circle');
-      bg.setAttribute('cx', 0); bg.setAttribute('cy', 0); bg.setAttribute('r', R);
-      bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', 'var(--border)'); bg.setAttribute('stroke-width', 14);
-      svg.appendChild(bg);
-
-      // center face — drawn BEFORE ticks so they sit on top of it.
-      const center = document.createElementNS(NS, 'circle');
-      center.setAttribute('cx', 0); center.setAttribute('cy', 0); center.setAttribute('r', R - 24);
-      center.setAttribute('class', 'ck-center');
-      svg.appendChild(center);
-
-      // 24 radial ticks (major every 6 hours).
-      for (let i = 0; i < 24; i++){
-        const a = (i/24) * Math.PI*2;
-        const major = i % 6 === 0;
-        const inner = major ? R - 22 : R - 16;
-        const p1 = polar(a, R - 10);
-        const p2 = polar(a, inner);
-        const ln = document.createElementNS(NS, 'line');
-        ln.setAttribute('x1', p1.x.toFixed(2)); ln.setAttribute('y1', p1.y.toFixed(2));
-        ln.setAttribute('x2', p2.x.toFixed(2)); ln.setAttribute('y2', p2.y.toFixed(2));
-        ln.setAttribute('class', 'ck-tick' + (major ? ' major' : ''));
-        ln.setAttribute('stroke-width', major ? 2 : 1);
-        svg.appendChild(ln);
-      }
-
-      // Cardinal numerals — all four at the SAME radial distance from center
-      // (using dominant-baseline:central so they're vertically balanced, not
-      // tied to font baseline). Sits just inside the major ticks.
-      const NR = R - 36;
-      [['0', 0, -NR], ['6', NR, 0], ['12', 0, NR], ['18', -NR, 0]].forEach(([txt, x, y]) => {
-        const tx = document.createElementNS(NS, 'text');
-        tx.setAttribute('x', x); tx.setAttribute('y', y);
-        tx.setAttribute('text-anchor', 'middle');
-        tx.setAttribute('dominant-baseline', 'central');
-        tx.setAttribute('class', 'ck-numeral');
-        tx.textContent = txt;
-        svg.appendChild(tx);
-      });
-
-      // arc on top of everything except handles
-      const arc = document.createElementNS(NS, 'path');
-      arc.setAttribute('class', 'ck-arc');
-      svg.appendChild(arc);
-
-      // handles
-      function makeHandle(){
-        const g = document.createElementNS(NS, 'g');
-        const c = document.createElementNS(NS, 'circle');
-        c.setAttribute('r', HANDLE_R); c.setAttribute('class', 'ck-handle');
-        g.appendChild(c);
-        svg.appendChild(g);
-        return g;
-      }
-      const sleepHandle = makeHandle();
-      const wakeHandle  = makeHandle();
-      // Small glyphs INSIDE each handle. Both visually centered on (0, 0)
-      // so they sit dead-center inside the handle's circle.
-      // Sleep — crescent moon (disc + smaller bg-coloured cutout, shifted to
-      // compensate the asymmetric weight of the visible crescent).
-      sleepHandle.innerHTML += `
-        <g pointer-events="none" transform="translate(0.6, 0)">
-          <circle cx="0" cy="0" r="4.2" fill="var(--accent-on)"/>
-          <circle cx="1.7" cy="-0.4" r="3.3" fill="var(--bg)"/>
-        </g>
-      `;
-      // Wake — sun (filled disc + 8 rays at 45° intervals). Symmetric, so it's
-      // perfectly centered by construction.
-      wakeHandle.innerHTML += `
-        <g pointer-events="none">
-          <circle cx="0" cy="0" r="3" fill="var(--accent-on)"/>
-          <g stroke="var(--accent-on)" stroke-width="1.3" stroke-linecap="round" fill="none">
-            <line x1="0"    y1="-5"   x2="0"    y2="-7.2"/>
-            <line x1="0"    y1="5"    x2="0"    y2="7.2"/>
-            <line x1="-5"   y1="0"    x2="-7.2" y2="0"/>
-            <line x1="5"    y1="0"    x2="7.2"  y2="0"/>
-            <line x1="-3.5" y1="-3.5" x2="-5.1" y2="-5.1"/>
-            <line x1="3.5"  y1="-3.5" x2="5.1"  y2="-5.1"/>
-            <line x1="-3.5" y1="3.5"  x2="-5.1" y2="5.1"/>
-            <line x1="3.5"  y1="3.5"  x2="5.1"  y2="5.1"/>
-          </g>
-        </g>
-      `;
-
-      function render(){
-        const aS = minToAngle(state.sleepMin);
-        const aW = minToAngle(state.wakeMin);
-        const pS = polar(aS, R);
-        const pW = polar(aW, R);
-        sleepHandle.setAttribute('transform', `translate(${pS.x.toFixed(2)},${pS.y.toFixed(2)})`);
-        wakeHandle .setAttribute('transform', `translate(${pW.x.toFixed(2)},${pW.y.toFixed(2)})`);
-
-        // arc from sleep -> wake (clockwise, since SVG y is inverted but we map 0=top, clockwise as time progresses)
-        const sweep = ((state.wakeMin - state.sleepMin + 1440) % 1440) / 1440;
-        const largeArc = sweep > 0.5 ? 1 : 0;
-        arc.setAttribute('d',
-          `M ${pS.x.toFixed(2)} ${pS.y.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${pW.x.toFixed(2)} ${pW.y.toFixed(2)}`);
-
-        opts.onChange && opts.onChange(state.sleepMin, state.wakeMin);
-      }
-
-      function eventToAngle(evt){
-        const rect = svg.getBoundingClientRect();
-        const cx = rect.left + rect.width/2;
-        const cy = rect.top  + rect.height/2;
-        const px = (evt.touches ? evt.touches[0].clientX : evt.clientX);
-        const py = (evt.touches ? evt.touches[0].clientY : evt.clientY);
-        const dx = px - cx;
-        const dy = py - cy;
-        // angle from +y up (top) growing clockwise
-        // atan2(dx, -dy): dx=right=positive, -dy: up=positive => atan2 returns 0 at top, π/2 at right
-        return Math.atan2(dx, -dy);
-      }
-
-      function attachDrag(handle, which){
-        let active = false;
-        const start = (e) => {
-          active = true;
-          e.preventDefault();
-        };
-        const move = (e) => {
-          if (!active) return;
-          const a = eventToAngle(e);
-          const m = angleToMin(a);
-          state[which] = m;
-          render();
-        };
-        const end = () => { active = false; };
-        handle.addEventListener('mousedown',  start);
-        handle.addEventListener('touchstart', start, { passive:false });
-        window.addEventListener('mousemove',  move);
-        window.addEventListener('touchmove',  move, { passive:false });
-        window.addEventListener('mouseup',    end);
-        window.addEventListener('touchend',   end);
-        window.addEventListener('touchcancel',end);
-      }
-      attachDrag(sleepHandle, 'sleepMin');
-      attachDrag(wakeHandle,  'wakeMin');
-
-      // tap on the ring to move the nearest handle
-      svg.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.ck-handle')) return;
-        const a = eventToAngle(e);
-        const m = angleToMin(a);
-        const dS = Math.min(Math.abs(m - state.sleepMin), 1440 - Math.abs(m - state.sleepMin));
-        const dW = Math.min(Math.abs(m - state.wakeMin),  1440 - Math.abs(m - state.wakeMin));
-        if (dS < dW) state.sleepMin = m; else state.wakeMin = m;
-        render();
-      });
-
-      render();
-      return {
-        get: () => ({ sleepMin: state.sleepMin, wakeMin: state.wakeMin }),
-        set: (s, w) => { state.sleepMin = s; state.wakeMin = w; render(); }
-      };
-    }
-
-    /* ============================================================
-     * Init the four clocks
-     * ============================================================ */
-    let clockNow, clockTgt, clockHome, clockJetTgt;
-    let _jetMode = 'regular';
-    const JET_REGULAR_SLEEP = 23 * 60;
-    const JET_REGULAR_WAKE  = 7  * 60;
-
-    function initClocks(){
-      clockNow = createClock('clock-now', {
-        sleepMin: 3*60, wakeMin: 11*60,
-        onChange: (s, w) => {
-          document.getElementById('now-sleep-val').textContent = fmt(s);
-          document.getElementById('now-wake-val').textContent  = fmt(w);
-        }
-      });
-      clockTgt = createClock('clock-tgt', {
-        sleepMin: 23*60, wakeMin: 7*60,
-        onChange: (s, w) => {
-          document.getElementById('tgt-sleep-val').textContent = fmt(s);
-          document.getElementById('tgt-wake-val').textContent  = fmt(w);
-        }
-      });
-      clockHome = createClock('clock-jet-home', {
-        sleepMin: 23*60, wakeMin: 7*60,
-        onChange: (s, w) => {
-          document.getElementById('jet-home-sleep-val').textContent = fmt(s);
-          document.getElementById('jet-home-wake-val').textContent  = fmt(w);
-          // Mirror to the target dial while in 'keep' mode.
-          if (_jetMode === 'keep' && clockJetTgt) clockJetTgt.set(s, w);
-        }
-      });
-      clockJetTgt = createClock('clock-jet-tgt', {
-        sleepMin: JET_REGULAR_SLEEP, wakeMin: JET_REGULAR_WAKE,
-        onChange: (s, w) => {
-          document.getElementById('jet-tgt-sleep-val').textContent = fmt(s);
-          document.getElementById('jet-tgt-wake-val').textContent  = fmt(w);
-        }
-      });
-    }
-
-    function setJetMode(mode){
-      _jetMode = mode;
-      document.querySelectorAll('#jet-mode-seg .mode-seg-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.mode === mode);
-      });
-      const card = document.getElementById('jet-tgt-card');
-      const hint = document.getElementById('jet-tgt-hint');
-      if (!card || !hint) return;
-      if (mode === 'regular') {
-        card.classList.add('disabled');
-        clockJetTgt && clockJetTgt.set(JET_REGULAR_SLEEP, JET_REGULAR_WAKE);
-        hint.setAttribute('data-i18n', 'jet-tgt-hint-regular');
-        hint.textContent = t('jet-tgt-hint-regular');
-      } else if (mode === 'keep') {
-        card.classList.add('disabled');
-        const h = clockHome.get();
-        clockJetTgt.set(h.sleepMin, h.wakeMin);
-        hint.setAttribute('data-i18n', 'jet-tgt-hint-keep');
-        hint.textContent = t('jet-tgt-hint-keep');
-      } else {
-        card.classList.remove('disabled');
-        hint.setAttribute('data-i18n', 'jet-tgt-hint-custom');
-        hint.textContent = t('jet-tgt-hint-custom');
-      }
-    }
-
-    /* ============================================================
-     * Cities dropdown
-     * ============================================================ */
-    function fillCityDropdowns(){
-      ['jet-from','jet-to'].forEach(id => {
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        const prev = sel.value;
-        sel.innerHTML = '';
-        CITIES.forEach(c => {
-          const o = document.createElement('option');
-          o.value = c.zone;
-          o.textContent = (LANG==='zh' ? c.zh : c.en);
-          sel.appendChild(o);
-        });
-        sel.value = prev || (id==='jet-from' ? 'Asia/Shanghai' : 'America/New_York');
-      });
-    }
-
-    /* ============================================================
-     * Plan rendering helpers
-     * ============================================================ */
-    const ICON = {
-      sun:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
-      moon:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-      glass: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="14" r="3"/><circle cx="18" cy="14" r="3"/><path d="M9 14h6M2 9l3-4h4M22 9l-3-4h-4"/></svg>',
-      coffee:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg>',
-      drop:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.32 0z"/></svg>',
-      pill:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5a7 7 0 1 1 9.9-9.9l-9.9 9.9z"/><path d="M8.5 8.5l7 7"/></svg>',
-      fork:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7a2 2 0 0 0 2 2h2v11M7 2v9M19 15V3a2 2 0 0 0-2 2v10h2a2 2 0 0 0 2-2"/></svg>',
-      nap:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7M18 12V7M2 18h20"/></svg>',
-      bath:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V4a2 2 0 1 1 4 0v2"/><path d="M2 12h20l-1.5 6a2 2 0 0 1-2 1.5H5.5a2 2 0 0 1-2-1.5z"/></svg>',
-      run:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m4 22 5-7 4 2 3-5 4 4"/></svg>',
-      ban:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
-      plane: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>'
-    };
-    function modMin(x){ return ((x%1440)+1440)%1440; }
-    function shortestDelta(a,b){ let d = modMin(b-a); if (d>720) d -= 1440; return d; }
-    function row(time, cls, icon, title, sub){
-      return `<div class="tl-row"><div class="tl-time">${time}</div><div class="tl-icon ${cls}">${icon}</div><div class="tl-text">${title}${sub?`<span class="tl-sub">${sub}</span>`:''}</div></div>`;
-    }
-
-    // Build the unordered list of timeline items for one plan day.
-    // Pulled out so both renderDay (HTML) and buildICS (calendar) can use it.
-    function buildDayItems(direction, bedMin, wakeMin, day1) {
-      const items = [];
-      if (direction === 'delay') {
-        items.push({ t: wakeMin, c:'warn', i:ICON.glass, key:'no-light', h:t('no-light'), s:t('no-light-sub') });
-      } else {
-        items.push({ t: wakeMin, c:'good', i:ICON.sun, key:'wake', h:t('wake'), s:t('wake-sub') });
-      }
-      items.push({ t: modMin(wakeMin + 30),  c:'good', i:ICON.drop,   key:'water', h:t('water'),  s:t('water-sub') });
-      items.push({ t: modMin(wakeMin + 60),  c:'good', i:ICON.sun,    key:'walk',  h:t('walk'),   s:t('walk-sub') });
-      if (_prepHave.coffee) {
-        items.push({ t: modMin(wakeMin + 240), c:'gray', i:ICON.coffee, key:'caf-ok', h:t('caf-ok'), s:t('caf-ok-sub') });
-      }
-      items.push({ t: modMin(wakeMin + 300), c:'gray', i:ICON.fork,   key:'lunch', h:t('lunch'),  s:t('lunch-sub') });
-      if (day1 && direction !== 'none') {
-        items.push({ t: modMin(wakeMin + 390), c:'warn', i:ICON.nap,  key:'nap',   h:t('nap'),    s:t('nap-sub') });
-      }
-      if (_prepHave.coffee) {
-        items.push({ t: modMin(wakeMin + 420), c:'bad', i:ICON.ban,   key:'caf-stop', h:t('caf-stop'), s:t('caf-stop-sub') });
-      }
-      items.push({ t: modMin(bedMin - 300),  c:'good', i:ICON.run,    key:'exercise', h:t('exercise'), s:t('exercise-sub') });
-      items.push({ t: modMin(bedMin - 240),  c:'gray', i:ICON.fork,   key:'dinner',  h:t('dinner'),   s:t('dinner-sub') });
-      items.push({ t: modMin(bedMin - 120),  c:'warn', i:ICON.glass,  key:'dim',     h:t('dim'),      s:t('dim-sub') });
-      items.push({ t: modMin(bedMin - 60),   c:'gray', i:ICON.bath,   key:'warm-bath', h:t('warm-bath'),s:t('warm-bath-sub') });
-      if (_prepHave.melatonin) {
-        items.push({ t: modMin(bedMin - 30), c:'warn', i:ICON.pill,   key:'mel',    h:t('mel'), s:t('mel-sub') });
-      }
-      items.push({ t: bedMin, c:'good', i:ICON.moon, key:'bed', h:t('bed'), s:t('bed-sub') });
-      return items;
-    }
-
-    function renderDay(label, direction, bedMin, wakeMin, day1, remainHours) {
-      const items = buildDayItems(direction, bedMin, wakeMin, day1);
-
-      const ordered = items.slice().sort((a,b) => modMin(a.t - wakeMin) - modMin(b.t - wakeMin));
-      const remainStr = remainHours > 0.1
-        ? (t(direction === 'advance' ? 'remain-advance' : 'remain-delay') + remainHours.toFixed(1) + ' ' + t('h'))
-        : t('on-target');
-      const wakeBedLine = t('wake-bed-line').replace('%WAKE%', fmt(wakeMin)).replace('%BED%', fmt(bedMin));
-
-      // Group rows into morning / afternoon / evening relative to wake & bed.
-      // Morning: first 4h after wake. Evening: last 5h before bed. Else: afternoon.
-      const tlParts = [];
-      let curSec = null;
-      ordered.forEach(o => {
-        const wakeOff = modMin(o.t - wakeMin);
-        const bedOff  = modMin(bedMin - o.t);
-        let sec;
-        if (wakeOff <= 240)      sec = 'morning';
-        else if (bedOff <= 300)  sec = 'evening';
-        else                     sec = 'afternoon';
-        if (sec !== curSec) {
-          curSec = sec;
-          tlParts.push(`<div class="tl-section" data-i18n="section-${sec}">${t('section-' + sec)}</div>`);
-        }
-        tlParts.push(row(fmt(o.t), o.c, o.i, o.h, o.s));
-      });
-
-      return `
-        <div class="day-card">
-          <h3><span class="day-pill">${label}</span> <span style="color:var(--muted);font-size:13px;font-weight:500;">${wakeBedLine}</span></h3>
-          <div class="day-sub">${remainStr}</div>
-          <div class="timeline">${tlParts.join('')}</div>
-        </div>`;
-    }
-
-    /* ============================================================
-     * Algorithm — aggressive 1-3 day reset
-     *
-     * Natural drift ≈ 1 h/day. Light + low-dose melatonin can
-     * achieve up to ~3 h/day in either direction with strict
-     * adherence (St Hilaire 2012, Burgess 2010). We aim for the
-     * shortest plan that respects the 1-3 day envelope.
-     * ============================================================ */
-    function computeDays(magnitudeH){
-      if (magnitudeH < 1) return { days: 1, perDay: 0 };
-      // Aim for 3 h/day max; pick smallest # of days that keeps perDay <=3
-      const dRaw = Math.ceil(magnitudeH / 3);
-      const days = Math.max(1, Math.min(3, dRaw));
-      const perDay = magnitudeH / days;
-      return { days, perDay };
-    }
-    function planFromShift(magnitudeH, direction, targetBedMin, targetWakeMin){
-      const { days, perDay } = computeDays(magnitudeH);
-      const aggressive = perDay > 2.7;
-      const out = [];
-      for (let i = 1; i <= days; i++){
-        const remain = (days - i) * perDay;
-        const offMin = remain * 60;
-        let bed, wake;
-        if (direction === 'advance'){ bed = modMin(targetBedMin + offMin); wake = modMin(targetWakeMin + offMin); }
-        else if (direction === 'delay'){ bed = modMin(targetBedMin - offMin); wake = modMin(targetWakeMin - offMin); }
-        else { bed = targetBedMin; wake = targetWakeMin; }
-        out.push({ i, days, bed, wake, remain });
-      }
-      return { days, perDay, aggressive, plan: out };
-    }
-    function dirLabel(dir){ return t('dir-' + dir); }
-    function magnitudeDisplay(h){
-      const wh = Math.floor(h);
-      const fm = Math.round((h - wh) * 60);
-      let s = '';
-      if (wh) s += wh + ' ' + t('h');
-      if (fm) s += (s?' ':'') + fm + ' ' + t('min');
-      return s || ('0 ' + t('h'));
-    }
-
-    /* ============================================================
-     * Generate sleep plan
-     * ============================================================ */
-    function generateSleep(){
-      const n = clockNow.get();
-      const tg = clockTgt.get();
-      const delta = shortestDelta(n.sleepMin, tg.sleepMin); // signed minutes
-      const mag = Math.abs(delta);
-      const direction = mag < 15 ? 'none' : (delta < 0 ? 'advance' : 'delay');
-      const magH = mag / 60;
-      const { days, perDay, aggressive, plan } = planFromShift(magH, direction, tg.sleepMin, tg.wakeMin);
-
-      // Plan starts tonight. Use a Luxon DateTime so the calendar export can
-      // walk forward day-by-day in the local timezone.
-      _lastPlan = {
-        mode: 'sleep',
-        direction,
-        plan,
-        startDate: DT.local().startOf('day'),
-        timezone: DT.local().zoneName
-      };
-
-      let html = `
-        <h2 style="font-size: clamp(28px,5vw,40px); font-weight:800; margin: 0 0 6px;" data-i18n="result-h">${t('result-h')}</h2>
-        <p style="color:var(--muted); font-size:14px; margin: 0 0 24px;">${t('plan-sub')}</p>
-        <div class="summary">
-          <div class="s-cell"><span class="s-label">${t('lbl-direction')}</span><span class="s-value">${direction==='none'?t('dir-none'):dirLabel(direction)}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-shift')}</span><span class="s-value">${magnitudeDisplay(magH)}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-days')}</span><span class="s-value">${days}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-rate')}</span><span class="s-value">${perDay.toFixed(1)} ${t('h')}</span></div>
-        </div>
-        ${aggressive ? `<div class="note" style="margin-bottom:20px;">${t('aggressive')}</div>` : ''}
-        ${direction==='none' ? `<div class="day-card"><div class="day-sub">${t('no-shift')}</div></div>` : ''}
-      `;
-      plan.forEach(d => {
-        const label = t('day-fmt').replace('%N%', d.i);
-        html += renderDay(label, direction, d.bed, d.wake, d.i === 1, d.remain);
-      });
-      html += planActionsHtml('sleep');
-      document.getElementById('plan-content').innerHTML = html;
-      document.getElementById('plan-back').onclick = () => showView('input-sleep');
-      showView('plan');
-      bindRipples();
-    }
-
-    /* ============================================================
-     * Generate jetlag plan
-     * ============================================================ */
-    const DT = luxon.DateTime;
-    function generateJetlag(){
-      const fromZone = document.getElementById('jet-from').value;
-      const toZone   = document.getElementById('jet-to').value;
-      const arriveStr = document.getElementById('jet-arrive').value;
-      if (!arriveStr) { alert(LANG==='zh' ? '请填写到达日期 / 时间' : 'Please pick arrival date/time'); return; }
-
-      const arrivalLocal = DT.fromISO(arriveStr, { zone: toZone });
-      if (!arrivalLocal.isValid) { alert('Invalid date'); return; }
-
-      const fromOffset = DT.fromMillis(arrivalLocal.toUTC().toMillis(), { zone: fromZone }).offset / 60;
-      const toOffset   = arrivalLocal.offset / 60;
-      const rawShift = toOffset - fromOffset;
-      const magH = Math.min(Math.abs(rawShift), 24 - Math.abs(rawShift));
-      const direction = Math.abs(rawShift) < 1 ? 'none' : (rawShift > 0 ? 'advance' : 'delay');
-
-      const tgt = clockJetTgt.get();
-      const targetBed  = tgt.sleepMin;
-      const targetWake = tgt.wakeMin;
-      const { days, perDay, aggressive, plan } = planFromShift(magH, direction, targetBed, targetWake);
-
-      _lastPlan = {
-        mode: 'jet',
-        direction,
-        plan,
-        startDate: arrivalLocal.startOf('day'),
-        timezone: toZone
-      };
-
-      let html = `
-        <h2 style="font-size: clamp(28px,5vw,40px); font-weight:800; margin: 0 0 6px;">${t('result-h')}</h2>
-        <p style="color:var(--muted); font-size:14px; margin: 0 0 24px;">${t('plan-sub')}</p>
-        <div class="summary">
-          <div class="s-cell"><span class="s-label">${t('lbl-direction')}</span><span class="s-value">${direction==='none'?t('dir-none'):dirLabel(direction)}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-shift')}</span><span class="s-value">${magnitudeDisplay(magH)}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-days')}</span><span class="s-value">${days}</span></div>
-          <div class="s-cell"><span class="s-label">${t('lbl-rate')}</span><span class="s-value">${perDay.toFixed(1)} ${t('h')}</span></div>
-        </div>
-        ${aggressive ? `<div class="note" style="margin-bottom:20px;">${t('aggressive')}</div>` : ''}
-      `;
-
-      // Pre-flight + flight card
-      const preItems = [];
-      if (direction !== 'none') {
-        preItems.push(row('—','good',ICON.sun, t(direction==='advance'?'preflight-shift-advance':'preflight-shift-delay'),''));
-      }
-      preItems.push(row('—','warn',ICON.ban,   t('flight-no-alc'),  t('flight-no-alc-sub')));
-      preItems.push(row('—','gray',ICON.plane, t('flight-time'),    t('flight-time-sub')));
-      preItems.push(row('—','good',ICON.fork,  t('flight-meal'),    t('flight-meal-sub')));
-      html += `
-        <div class="day-card">
-          <h3><span class="day-pill">${t('pre-flight')}</span></h3>
-          <div class="day-sub">${LANG==='zh'?'在飞机上就开始让身体向目的地节律靠拢。':'Start drifting toward destination rhythm while still airborne.'}</div>
-          <div class="timeline">${preItems.join('')}</div>
-        </div>`;
-
-      plan.forEach(d => {
-        const label = t('arrival-day-fmt').replace('%N%', d.i);
-        html += renderDay(label, direction, d.bed, d.wake, d.i === 1, d.remain);
-      });
-
-      html += planActionsHtml('jet');
-      document.getElementById('plan-content').innerHTML = html;
-      document.getElementById('plan-back').onclick = () => showView('input-jet');
-      showView('plan');
-      bindRipples();
-    }
-
-    /* ============================================================
-     * Boot
-     * ============================================================ */
-    // Scroll-driven navbar frost
-    (function(){
-      const root = document.documentElement;
-      let ticking = false;
-      function update(){
-        ticking = false;
-        const p = Math.min(1, Math.max(0, window.scrollY / 120));
-        root.style.setProperty('--frost-progress', p.toFixed(3));
-      }
-      window.addEventListener('scroll', () => { if (!ticking){ticking=true;requestAnimationFrame(update);} }, { passive: true });
-      update();
-    })();
-
-    // Default arrival = tomorrow 14:00
-    (function(){
-      const d = new Date();
-      d.setDate(d.getDate() + 1);
-      const iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T14:00';
-      document.getElementById('jet-arrive').value = iso;
-    })();
-
-    fillCityDropdowns();
-    initClocks();
-    applyLang(LANG);
-    bindRipples();
-  </script>
+  <!-- Load order: core (data + algorithm) → app (shared DOM + plan render)
+       → input (questionnaire-specific: clocks + generate*). -->
+  <script src="lib/jetlag-core.js"></script>
+  <script src="lib/jetlag-app.js"></script>
+  <script src="lib/jetlag-input.js"></script>
 </body>
 </html>

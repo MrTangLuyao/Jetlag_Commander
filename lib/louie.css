@@ -15,9 +15,10 @@
   --accent: #d97757;
   --accent-dim: rgba(217, 119, 87, 0.15);
   --accent-on: #ffb49d;
-  --good: #7fc77f;
-  --warn: #e8c46a;
-  --bad:  #e87a6a;
+  --good:  #7fc77f;
+  --warn:  #e8c46a;
+  --bad:   #e87a6a;
+  --sleep: #6a9ae8;
 }
 
 html {
@@ -162,6 +163,9 @@ input[type="datetime-local"], input[type="time"], input[type="date"] { color-sch
   margin-bottom: 20px;
 }
 .summary .s-cell {
+  /* Each summary cell takes an equal slice of the row (instead of shrinking
+   * to its content width, which left the row mostly empty). */
+  flex: 1 1 0;
   display: flex; flex-direction: column; gap: 2px;
   padding: 0 18px; border-left: 1px solid var(--border);
 }
@@ -177,11 +181,56 @@ input[type="datetime-local"], input[type="time"], input[type="date"] { color-sch
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 20px; padding: 24px; margin-bottom: 20px;
 }
+/* Day header lays out on the SAME grid as a timeline row, so the day
+ * pill sits over the HH:MM column and the remain badge sits over the
+ * icon column. The third cell carries the "wake 09:00 → bed 23:00" text. */
 .day-card h3 {
   font-size: 18px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 12px; margin: 0 0 4px;
+  display: grid;
+  grid-template-columns: var(--tl-time-col) var(--tl-icon-col) 1fr;
+  align-items: center;
+  gap: var(--tl-gap);
+  margin: 0 0 4px;
 }
+.day-card h3 .day-pill   { justify-self: center; }
+.day-card h3 .day-remain { justify-self: center; }
+.day-card h3 .day-rhythm { justify-self: start; }
+/* The wide arrow+number badge overflows the icon column symmetrically,
+ * so its right edge eats into the wake/bed text. Only push the text when
+ * the wide form is present — the slim ✓ badge has plenty of room already. */
+.day-card h3:has(.day-remain:not(.on)) .day-rhythm { margin-left: 14px; }
+/* Extra whitespace between the card header and the first timeline row
+ * so each "Day N" section reads as its own block. */
+.day-card h3 + .timeline { margin-top: 22px; }
 .day-card .day-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+/* When the card has no h3 (pre-flight card after the pill removal), the
+ * day-sub line itself is the first thing — keep the same top breathing. */
+.day-card > .day-sub:first-child { margin-top: 4px; }
+.day-rhythm {
+  color: var(--muted); font-size: 13px; font-weight: 500;
+  font-feature-settings: "tnum";
+}
+/* Compact "how far still to shift" pill badge.
+ * It centers in the icon grid column above and overflows symmetrically
+ * into the gap — the column itself stays 28px so the badge's CENTER
+ * lines up with the timeline-icon centers below. */
+.day-remain {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 700;
+  padding: 3px 10px; border-radius: 9999px;
+  background: var(--surface-high); color: var(--muted);
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+}
+.day-remain.on {
+  background: rgba(127, 199, 127, 0.15);
+  color: var(--good);
+}
+
+/* Mirror an inline SVG horizontally — used so the "delay" arrow reuses
+ * the visual style of the "advance" (left-pointing) arrow instead of a
+ * second, slightly off-feeling glyph. */
+.flip-x { display: inline-flex; transform: scaleX(-1); }
 .day-pill {
   display: inline-flex; align-items: center; padding: 3px 11px;
   font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
@@ -189,22 +238,44 @@ input[type="datetime-local"], input[type="time"], input[type="date"] { color-sch
   text-transform: uppercase;
 }
 .timeline { display: flex; flex-direction: column; gap: 0; }
+/* Column widths for the whole plan grid (h3, tl-section, tl-row).
+ * Sleep mode keeps the narrow 86px column — its pill ("第 N 天" / "Day N")
+ * is only 3-5 chars and fits fine. Jet mode pills carry an extra prefix
+ * ("到达第 N 天"), which doesn't fit and overlaps the icon column unless
+ * we widen here. The override is scoped via [data-plan-mode="jet"]. */
+:root {
+  --tl-time-col: 86px;
+  --tl-icon-col: 28px;
+  --tl-gap: 12px;
+}
+[data-plan-mode="jet"] { --tl-time-col: 116px; }
+@media (max-width: 540px) {
+  :root { --tl-time-col: 64px; --tl-icon-col: 24px; --tl-gap: 10px; }
+  [data-plan-mode="jet"] { --tl-time-col: 100px; }
+}
+
 .tl-row {
-  display: grid; grid-template-columns: 86px 28px 1fr;
-  align-items: start; gap: 12px;
+  display: grid;
+  grid-template-columns: var(--tl-time-col) var(--tl-icon-col) 1fr;
+  /* Vertically center the time + icon against the (possibly two-line)
+   * text cell — keeps "09:00" and the icon visually paired with the row
+   * instead of stuck to the top edge. */
+  align-items: center; gap: var(--tl-gap);
   padding: 12px 0; border-top: 1px dashed var(--border);
 }
 .tl-row:first-child { border-top: none; padding-top: 0; }
-.tl-time { font-size: 13px; font-weight: 700; color: var(--accent-on); letter-spacing: 0.02em; }
+.tl-time { font-size: 13px; font-weight: 700; color: var(--accent-on); letter-spacing: 0.02em; text-align: center; }
 .tl-icon { width: 28px; height: 28px; border-radius: 8px; display:flex; align-items:center; justify-content:center; background: var(--accent-dim); color: var(--accent-on); flex-shrink: 0; }
-.tl-icon.gray { background: rgba(161,161,160,0.12); color: var(--muted); }
-.tl-icon.good { background: rgba(127,199,127,0.15); color: var(--good); }
-.tl-icon.warn { background: rgba(232,196,106,0.15); color: var(--warn); }
-.tl-icon.bad  { background: rgba(232,122,106,0.15); color: var(--bad); }
+.tl-icon.gray  { background: rgba(161,161,160,0.12); color: var(--muted); }
+.tl-icon.good  { background: rgba(127,199,127,0.15); color: var(--good); }
+.tl-icon.warn  { background: rgba(232,196,106,0.15); color: var(--warn); }
+.tl-icon.bad   { background: rgba(232,122,106,0.15); color: var(--bad); }
+.tl-icon.sleep { background: rgba(106,154,232,0.15); color: var(--sleep); }
 .tl-text { font-size: 14.5px; line-height: 1.55; color: var(--text); }
 .tl-text .tl-sub { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; line-height: 1.55; }
 @media (max-width: 540px) {
-  .tl-row { grid-template-columns: 64px 24px 1fr; gap: 10px; }
+  /* Grid column widths come from the :root mobile override above; here
+   * we only tune element sizes that aren't derived from the grid. */
   .tl-time { font-size: 12px; }
   .tl-icon { width: 24px; height: 24px; }
   .tl-text { font-size: 14px; }
@@ -242,39 +313,62 @@ input[type="datetime-local"], input[type="time"], input[type="date"] { color-sch
 .clock-card.disabled .clock-svg { pointer-events: none; opacity: 0.45; }
 .clock-card.disabled .ck-times .val { color: var(--muted); }
 
-/* ─── Center action row ─── */
-.row-actions { justify-content: center; }
-
-/* ─── Ambient sound-wave animation (prep "mental state" item) ───
- * A calm core pulse with three concentric rings rippling outward
- * at staggered phase. Reads like a sonar / ambient indicator.
+/* ─── Action button rows ───
+ * Shared by .row-actions (single-button rows under input pages) and
+ * .plan-actions (multi-button row at the bottom of a plan). Both pages
+ * use this; the questionnaire used to redeclare these in inline styles,
+ * the display page never did — which is what made plan actions appear
+ * left-aligned. Keep them centralized here.
  */
-@keyframes ambientRing {
-  0%   { r: 7;  opacity: 0; }
-  20%  { opacity: 0.55; }
-  100% { r: 40; opacity: 0; }
+.row-actions {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center;
 }
-@keyframes ambientCore {
-  0%, 100% { transform: scale(1);    opacity: 0.85; }
-  50%      { transform: scale(1.12); opacity: 1; }
-}
-.amb-core {
-  transform-origin: center;
-  transform-box: fill-box;
-  animation: ambientCore 3.6s ease-in-out infinite;
-}
-.amb-r1 { animation: ambientRing 3.6s ease-out infinite; }
-.amb-r2 { animation: ambientRing 3.6s ease-out infinite 1.2s; }
-.amb-r3 { animation: ambientRing 3.6s ease-out infinite 2.4s; }
 
-/* ─── Timeline section heading (Morning / Afternoon / Night) ─── */
+/* ─── Mindset figure animation (prep "mental state" item) ───
+ * A seated person with a halo arc above. The halo gently breathes
+ * outward, brightening as it swells — reads as "centered, present."
+ */
+@keyframes mindHalo {
+  0%, 100% { transform: scale(1);    opacity: 0.55; }
+  50%      { transform: scale(1.10); opacity: 1; }
+}
+.mind-halo {
+  transform-origin: 50px 62px;
+  transform-box: view-box;
+  animation: mindHalo 3.8s ease-in-out infinite;
+}
+
+/* ─── Timeline section heading (Morning / Afternoon / Night) ───
+ * Uses the same column structure as .tl-row so the label sits in the
+ * time-column footprint (and reads as a header for the HH:MM stack
+ * below). Border-top stays full-width to keep the visual divider. */
 .tl-section {
+  display: grid;
+  grid-template-columns: var(--tl-time-col) 1fr;
+  gap: var(--tl-gap);
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--muted);
   padding: 18px 0 8px 0;
   margin-top: 6px;
   border-top: 1px solid var(--border);
+  text-align: center;
 }
+
+/* ─── Phase label (e.g. "Pre-flight" / "Arrival") ───
+ * Sits BETWEEN top-level cards (not inside one) to separate the
+ * pre-arrival and post-arrival halves of a jet-lag plan. */
+.phase-label {
+  text-align: center;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted);
+  margin: 26px 0 14px;
+}
+/* The first phase label sits right under the summary — don't double the
+ * gap. */
+.summary + .phase-label,
+.note    + .phase-label { margin-top: 10px; }
 .tl-section:first-child {
   border-top: none; margin-top: 0; padding-top: 0;
 }

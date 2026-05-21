@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Jetlag Commander 2 — Plan</title>
+  <meta name="description" content="科学调整睡眠 · 1–3 天搞定时差。">
+  <meta name="theme-color" content="#1f1f1e">
+  <link rel="stylesheet" href="../lib/fonts.css">
+  <link rel="stylesheet" href="../lib/louie.css">
+  <script src="../lib/tailwindcss.js"></script>
+  <script src="../lib/tailwind.config.js"></script>
+  <script src="../lib/luxon.min.js"></script>
+  <style>
+    body { -webkit-user-select: none; user-select: none; }
+    input, select, textarea { -webkit-user-select: text; user-select: text; }
+
+    .plan-wrap { padding: 96px 24px 80px; max-width: 880px; margin: 0 auto; }
+    /* .row-actions/.plan-actions flex+centering live in louie.css. */
+    .plan-actions .plan-action-btn { min-width: 160px; }
+    @media (max-width: 540px) {
+      .plan-actions .plan-action-btn { min-width: 140px; flex: 1 1 100%; }
+    }
+
+    /* Same mobile-tap and toast rules as the questionnaire — kept in sync. */
+    .btn-primary, .btn-ghost, .btn-hero,
+    #brand-btn, #lang-toggle, .ripple-surface {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:active, .btn-ghost:active, .btn-hero:active,
+    #brand-btn:active, #lang-toggle:active { transform: none; }
+    #share-toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-high); color: var(--text);
+      padding: 12px 22px; border-radius: 9999px;
+      border: 1px solid var(--outline);
+      font-size: 13px; letter-spacing: 0.02em;
+      z-index: 10000; pointer-events: none;
+      opacity: 0; transition: opacity 0.22s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+    }
+    #share-toast.on { opacity: 1; }
+
+    .empty-state {
+      min-height: 60vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 80px 24px;
+    }
+    .empty-state h2 {
+      font-size: clamp(22px, 4vw, 28px); font-weight: 700; margin: 0 0 12px;
+    }
+    .empty-state p { color: var(--muted); margin: 0 0 28px; }
+  </style>
+</head>
+<body class="antialiased min-h-screen">
+
+  <nav id="navbar">
+    <div>
+      <a id="brand-btn" class="ripple-surface" data-home-link href="../index.html" style="text-decoration:none;">
+        <span class="b-static">jetlag</span><span class="b-dot">.</span><span class="b-page">commander</span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <button id="lang-toggle" class="ripple-surface" onclick="toggleLang()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+        <span id="lang-label">EN ⇄ 文</span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="view-plan" class="view active">
+    <div class="plan-wrap">
+      <a class="btn-ghost ripple-surface" data-home-link href="../index.html" style="margin-bottom: 16px; text-decoration:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div id="plan-content"></div>
+    </div>
+  </main>
+
+  <!-- Display page = core + app only (no clocks / no questionnaire JS). -->
+  <script src="../lib/jetlag-core.js"></script>
+  <script src="../lib/jetlag-app.js"></script>
+  <script>
+    /* Boot the display page:
+     *   1. Decode the share hash.
+     *   2. Apply language + prep flags.
+     *   3. Recompute the plan from the encoded inputs.
+     *   4. Render into #plan-content.
+     * No hash → bounce back to the questionnaire. */
+    (function bootDisplay(){
+      applyLang(LANG);
+      bindRipples();
+      // jetlag-app.js already rewrote [data-home-link] anchors; reuse the
+      // resolved value for the empty-state CTA and the fallback redirect.
+      const home = homeUrl();
+      const state = decodeStateFromHash();
+      if (!state) {
+        const mount = document.getElementById('plan-content');
+        mount.outerHTML = `
+          <div class="empty-state">
+            <h2>${LANG==='zh'?'没有计划数据':'No plan data'}</h2>
+            <p>${LANG==='zh'?'这个链接里没有可解析的计划。回到首页填写信息生成一份。':'This link has no decodable plan. Head back to fill in your details.'}</p>
+            <a class="btn-primary ripple-surface ripple-primary" href="${home}" style="text-decoration:none;">
+              ${LANG==='zh'?'回到首页':'Go home'}
+            </a>
+          </div>`;
+        bindRipples();
+        return;
+      }
+      applyShareState(state);   // sets LANG / _prepHave / _flow / _jetMode
+      let lp;
+      if (state.m === 'jet') {
+        const fromZone = (CITIES[state.jf] || CITIES[0]).zone;
+        const toZone   = (CITIES[state.jt] || CITIES[0]).zone;
+        lp = computeJetPlan(fromZone, toZone, state.ja,
+                            { sleepMin: state.jts, wakeMin: state.jtw });
+      } else {
+        lp = computeSleepPlan({ sleepMin: state.ns, wakeMin: state.nw },
+                              { sleepMin: state.ts, wakeMin: state.tw });
+      }
+      if (!lp) {
+        // Couldn't reconstruct — kick the user back to edit their inputs.
+        window.location.replace(home + window.location.hash);
+        return;
+      }
+      _lastPlan = lp;
+      document.getElementById('plan-content').innerHTML = renderPlanHtml(lp);
+      bindRipples();
+    })();
+    // Live edits to the hash (user pastes a new one in the URL bar) re-boot.
+    window.addEventListener('hashchange', () => location.reload());
+  </script>
+</body>
+</html>
